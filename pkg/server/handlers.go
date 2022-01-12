@@ -1,7 +1,10 @@
 package server
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"refueling/pkg/adding"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +25,11 @@ func (s *Server) RefNames() gin.HandlerFunc {
 
 func (s *Server) Post() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		msg := c.PostForm("title")
-		c.IndentedJSON(http.StatusOK, msg)
+		var detailWeek []adding.DetailWeek
+		err := c.BindJSON(&detailWeek)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(detailWeek)
 	}
 }

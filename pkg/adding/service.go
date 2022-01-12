@@ -1,5 +1,7 @@
-package addingJ
+package adding
 
 type Service interface {
 	AddFC()
 }
+
+//
