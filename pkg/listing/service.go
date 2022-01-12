@@ -1,7 +1,7 @@
 package listing
 
 import (
-	"refueling/pkg/storage"
+	"refueling/pkg/storage/SQL"
 )
 
 type ListingService interface {
@@ -9,7 +9,7 @@ type ListingService interface {
 }
 
 type StorageService interface {
-	GetRefuelNamesQuery() []storage.ReactorRefuel
+	GetRefuelNamesQuery() []SQL.ReactorRefuel
 }
 
 type listingService struct {

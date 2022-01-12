@@ -1,4 +1,4 @@
-package storage
+package SQL
 
 type RefuelActs struct {
 	Id                    int64

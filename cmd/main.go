@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"refueling/pkg/listing"
 	"refueling/pkg/server"
-	"refueling/pkg/storage"
+	"refueling/pkg/storage/NoSQL"
+	"refueling/pkg/storage/SQL"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,9 +15,13 @@ func main() {
 	// gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
 	engine.Use(CORSMiddleware())
-	strge := storage.NewStorage()
-	listing := listing.NewListingService(strge)
-	srvr := server.NewServer(engine, listing)
+	strgNoSQL := NoSQL.NewStorage()
+	fmt.Println(strgNoSQL)
+	strgeSQL := SQL.NewStorage()
+	// addingJ :=
+
+	listingR := listing.NewListingService(strgeSQL)
+	srvr := server.NewServer(engine, listingR)
 	srvr.Run()
 
 }
