@@ -35,7 +35,7 @@ func NewStorage() *Storage {
 	collectionFC := client.Database("EnOutDiary").Collection("FuelCycle")
 	collectionWD := client.Database("EnOutDiary").Collection("WeeklyData")
 
-	return &Storage{dbFC: collectionFC, dbWD:collectionWD}
+	return &Storage{dbFC: collectionFC, dbWD: collectionWD}
 }
 
 func (s *Storage) AddWeeklyData(formsData *adding.FormsData) {
@@ -85,7 +85,7 @@ func (s *Storage) ReadWeeklyData(name int32) {
 
 }
 
-func (s *Storage) GetNewWeekNum(name string) {
+func (s *Storage) GetNewWeekNum(name string) int32 {
 	curr, err := s.dbFC.Find(context.Background(), bson.D{
 		{"name", name},
 	})
@@ -97,9 +97,11 @@ func (s *Storage) GetNewWeekNum(name string) {
 	var result bson.D
 	curr.Decode(&result)
 	fmt.Println(result)
-
+	if len(result) > 0 {
+		return 1
+	}
+	return 1
 }
-
 
 // func (s *Storage) ReadFCOne() {
 // 	var testRead FuelCycle

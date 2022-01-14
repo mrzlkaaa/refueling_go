@@ -1,4 +1,4 @@
-package listing
+package listingRefuels
 
 import (
 	"refueling/pkg/storage/SQL"
@@ -6,12 +6,10 @@ import (
 
 type ListingService interface {
 	GetRefuelNames() map[string][]string
-	GetNewWeekNum(string)
 }
 
 type StorageService interface {
 	GetRefuelNamesQuery() []SQL.ReactorRefuel
-	GetNewWeekNum(string)
 }
 
 type listingService struct {
@@ -31,8 +29,4 @@ func (s *listingService) GetRefuelNames() map[string][]string {
 	}
 	mapQuery["names"] = names
 	return mapQuery
-}
-
-func (s *listingService) GetNewWeekNum(name string) {
-	s.storage.GetNewWeekNum(name)
 }

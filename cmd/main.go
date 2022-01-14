@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"refueling/pkg/adding"
-	"refueling/pkg/listing"
+	listingDiary "refueling/pkg/listing/diary"
+	listingRefuels "refueling/pkg/listing/refuels"
 	"refueling/pkg/server"
 	"refueling/pkg/storage/NoSQL"
 	"refueling/pkg/storage/SQL"
@@ -19,8 +20,9 @@ func main() {
 	strgNoSQL := NoSQL.NewStorage()
 	strgeSQL := SQL.NewStorage()
 	adding := adding.NewService(strgNoSQL)
-	listingR := listing.NewListingService(strgeSQL)
-	srvr := server.NewServer(engine, listingR, adding)
+	listingR := listingRefuels.NewListingService(strgeSQL)
+	listingD := listingDiary.NewListingService(strgNoSQL)
+	srvr := server.NewServer(engine, listingR, listingD, adding)
 	srvr.Run()
 
 }

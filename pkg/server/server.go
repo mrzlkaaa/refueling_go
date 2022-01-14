@@ -2,20 +2,23 @@ package server
 
 import (
 	"refueling/pkg/adding"
-	"refueling/pkg/listing"
+	listingDiary "refueling/pkg/listing/diary"
+	listingRefuels "refueling/pkg/listing/refuels"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	engine  *gin.Engine
-	listing listing.ListingService
-	adding  adding.AddingService
+	engine   *gin.Engine
+	listingR listingRefuels.ListingService
+	listingD listingDiary.ListingService
+	adding   adding.AddingService
 	// refs to listing, adding and so on
 }
 
-func NewServer(engine *gin.Engine, listing listing.ListingService, adding adding.AddingService) *Server {
-	return &Server{engine: engine, listing: listing, adding: adding}
+func NewServer(engine *gin.Engine, listingR listingRefuels.ListingService,
+	listingD listingDiary.ListingService, adding adding.AddingService) *Server {
+	return &Server{engine: engine, listingR: listingR, listingD: listingD, adding: adding}
 }
 
 func (s *Server) Run() {

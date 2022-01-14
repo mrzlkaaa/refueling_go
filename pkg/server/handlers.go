@@ -13,13 +13,13 @@ func (s *Server) Router() *gin.Engine {
 	router := s.engine
 	router.GET("/refuelingsList", s.RefNames())
 	router.GET("/getNewWeekNum/:fcName", s.NewWeekNum())
-	router.POST("/SubmitWeekData", s.SubmitWeekData())
+	router.POST("/submitWeekData", s.SubmitWeekData())
 	return router
 }
 
 func (s *Server) RefNames() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		data := s.listing.GetRefuelNames()
+		data := s.listingR.GetRefuelNames()
 		c.IndentedJSON(http.StatusOK, data)
 	}
 }
@@ -27,7 +27,8 @@ func (s *Server) RefNames() gin.HandlerFunc {
 func (s *Server) NewWeekNum() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fcName := c.Param("fcName")
-		s.listing.GetNewWeekNum(fcName)
+		weekNum := s.listingD.GetNewWeekNum(fcName)
+		c.IndentedJSON(http.StatusOK, weekNum)
 
 	}
 }
