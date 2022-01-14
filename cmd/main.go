@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"refueling/pkg/adding"
 	"refueling/pkg/listing"
 	"refueling/pkg/server"
 	"refueling/pkg/storage/NoSQL"
@@ -16,12 +17,10 @@ func main() {
 	engine := gin.Default()
 	engine.Use(CORSMiddleware())
 	strgNoSQL := NoSQL.NewStorage()
-	fmt.Println(strgNoSQL)
 	strgeSQL := SQL.NewStorage()
-	// addingJ :=
-
+	adding := adding.NewService(strgNoSQL)
 	listingR := listing.NewListingService(strgeSQL)
-	srvr := server.NewServer(engine, listingR)
+	srvr := server.NewServer(engine, listingR, adding)
 	srvr.Run()
 
 }
