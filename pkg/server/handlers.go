@@ -35,7 +35,7 @@ func (s *Server) NewWeekNum() gin.HandlerFunc {
 
 func (s *Server) SubmitWeekData() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var formsData adding.FormsData
+		var formsData adding.FuelCycle
 		err := c.BindJSON(&formsData)
 		fmt.Println("i got shit like", err)
 		if err != nil {

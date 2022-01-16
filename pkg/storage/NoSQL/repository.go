@@ -12,8 +12,7 @@ import (
 )
 
 type Storage struct {
-	dbFC *mongo.Collection
-	dbWD *mongo.Collection
+	db *mongo.Collection
 }
 
 func NewStorage() *Storage {
@@ -32,43 +31,109 @@ func NewStorage() *Storage {
 	}
 
 	fmt.Println("Connected to MongoDB!")
-	collectionFC := client.Database("EnOutDiary").Collection("FuelCycle")
-	collectionWD := client.Database("EnOutDiary").Collection("WeeklyData")
+	collection := client.Database("enOutDiary").Collection("Diary")
 
-	return &Storage{dbFC: collectionFC, dbWD: collectionWD}
+	return &Storage{db: collection}
 }
 
-func (s *Storage) AddWeeklyData(formsData *adding.FormsData) {
+func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
 
-	var sumTime float64
-	var sumEnOut float64
-	var Details []DetailWeek
+	//* its actually update of existing FC by adding new weekly data
+	var FC FuelCycle
+	// var sumTime float64
+	// var sumEnOut float64
 
-	for _, v := range formsData.DetailWeek {
-		sumTime += v.Time
-		sumEnOut += v.EnergyOutput
-		Details = append(Details, DetailWeek{
-			Power:        v.Power,
-			FromDate:     v.FromDate,
-			ToDate:       v.ToDate,
-			Time:         v.Time,
-			EnergyOutput: v.EnergyOutput,
+	// fmt.Println(FC.DetailWeek)
+
+	FC.Name = formsData.Name
+
+	// FC.WeekName = formsData.WeekName
+	// for k, v := range formsData.DetailWeek {
+	// 	FC.WeeklyData[k].DetailWeek = append(FC.WeeklyData[k].DetailWeek,
+	// 		DetailWeek{
+	// 			Power:        v.Power,
+	// 			FromDate:     v.FromDate,
+	// 			ToDate:       v.ToDate,
+	// 			Time:         v.Time,
+	// 			EnergyOutput: v.EnergyOutput,
+	// 		})
+
+	// 	sumTime += v.Time
+	// 	sumEnOut += v.EnergyOutput
+	// }
+
+	// if err := curr.All(context.TODO(), &results); err != nil {
+	// 	panic(err)
+	// }
+
+}
+
+func (s *Storage) FCExistingCheck(name string) error {
+	filter := bson.M{
+		"Name": bson.M{"$eq": name},
+	}
+
+	var results bson.D
+	err := s.db.FindOne(context.Background(), filter).Decode(&results)
+	return err
+}
+
+//* will be callced from upper layer if check for existing instance fails
+func (s *Storage) CreateDBInstance(name string) {
+	var newFCinstance FuelCycle
+	var newWDinstance WeeklyData
+
+	newFCinstance.Name = name
+	newFCinstance.WeeklyData = append(newFCinstance.WeeklyData,
+		newWDinstance)
+
+	newFCinstance.WeeklyData[0].DetailWeek = append(newFCinstance.WeeklyData[0].DetailWeek,
+		DetailWeek{
+			Power:        0.0,
+			FromDate:     "",
+			ToDate:       "",
+			Time:         0.0,
+			EnergyOutput: 0.0,
 		})
-	}
 
-	insert := WeeklyData{
-		Name:        formsData.WeekName,
-		TotalTime:   sumTime,
-		TotalEnOuts: sumEnOut,
-		Detail:      Details,
-		FCbackref:   formsData.FCName,
-	}
+	fmt.Println("creating new instance", newFCinstance)
+	s.db.InsertOne(context.Background(), newFCinstance)
 
-	s.dbWD.InsertOne(context.TODO(), insert)
 }
+
+// func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
+
+// 	var FC FuelCycle
+// 	var sumTimeFC float64
+// 	var sumEnOutFC float64
+
+// 	FC.Name = formsData.Name
+// 	for k, v := range formsData.WeeklyData {
+// 		fmt.Println(v.Name)
+// 		FC.WeeklyData[k].Name = v.Name
+
+// 		var sumTimeW float64
+// 		var sumEnOutW float64
+
+// 		for _, vv := range v.DetailWeek {
+// 			FC.WeeklyData[k].DetailWeek = append(FC.WeeklyData[k].DetailWeek,
+// 				DetailWeek{
+// 					Power:        vv.Power,
+// 					FromDate:     vv.FromDate,
+// 					ToDate:       vv.ToDate,
+// 					Time:         vv.Time,
+// 					EnergyOutput: vv.EnergyOutput,
+// 				})
+
+// 			sumTimeW += vv.Time
+// 			sumEnOutW += vv.EnergyOutput
+// 		}
+
+// 	s.db.InsertOne(context.TODO(), FC)
+// }
 
 func (s *Storage) ReadWeeklyData(name int32) {
-	curr, err := s.dbWD.Find(context.Background(), bson.D{
+	curr, err := s.db.Find(context.Background(), bson.D{
 		{"name", 1},
 	})
 
@@ -86,7 +151,7 @@ func (s *Storage) ReadWeeklyData(name int32) {
 }
 
 func (s *Storage) GetNewWeekNum(name string) int32 {
-	curr, err := s.dbFC.Find(context.Background(), bson.D{
+	curr, err := s.db.Find(context.Background(), bson.D{
 		{"name", name},
 	})
 
@@ -97,8 +162,8 @@ func (s *Storage) GetNewWeekNum(name string) int32 {
 	var result bson.D
 	curr.Decode(&result)
 	fmt.Println(result)
-	if len(result) > 0 {
-		return 1
+	if len(result) > 1 {
+		return 10000
 	}
 	return 1
 }
