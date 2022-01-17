@@ -5,7 +5,7 @@ import (
 )
 
 type FuelCycle struct {
-	ID          primitive.ObjectID
+	_ID          primitive.ObjectID
 	Name        string
 	TotalTime   float64
 	TotalEnOuts float64
@@ -13,7 +13,7 @@ type FuelCycle struct {
 }
 
 type WeeklyData struct {
-	WeekName    int32
+	WeekName    int32	
 	TotalTime   float64
 	TotalEnOuts float64
 	DetailWeek  []DetailWeek

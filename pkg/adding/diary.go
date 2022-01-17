@@ -25,7 +25,7 @@ import (
 // }
 
 type FuelCycle struct {
-	ID         primitive.ObjectID `bson:"_id, omitempty"`
+	_ID         primitive.ObjectID `bson:"_id, omitempty"`
 	Name       string             `json:"fcName"`
 	WeekName   int32              `json:"week"`
 	DetailWeek []DetailWeek       `json:"weeklyDetail"`

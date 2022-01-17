@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"errors"
 	"refueling/pkg/adding"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,153 +37,118 @@ func NewStorage() *Storage {
 	return &Storage{db: collection}
 }
 
-func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
-
-	//* its actually update of existing FC by adding new weekly data
-	var FC FuelCycle
-	// var sumTime float64
-	// var sumEnOut float64
-
-	// fmt.Println(FC.DetailWeek)
-
-	FC.Name = formsData.Name
-
-	// FC.WeekName = formsData.WeekName
-	// for k, v := range formsData.DetailWeek {
-	// 	FC.WeeklyData[k].DetailWeek = append(FC.WeeklyData[k].DetailWeek,
-	// 		DetailWeek{
-	// 			Power:        v.Power,
-	// 			FromDate:     v.FromDate,
-	// 			ToDate:       v.ToDate,
-	// 			Time:         v.Time,
-	// 			EnergyOutput: v.EnergyOutput,
-	// 		})
-
-	// 	sumTime += v.Time
-	// 	sumEnOut += v.EnergyOutput
-	// }
-
-	// if err := curr.All(context.TODO(), &results); err != nil {
-	// 	panic(err)
-	// }
-
-}
-
 func (s *Storage) FCExistingCheck(name string) error {
 	filter := bson.M{
-		"Name": bson.M{"$eq": name},
+		"name": bson.M{"$eq": name},
 	}
 
 	var results bson.D
 	err := s.db.FindOne(context.Background(), filter).Decode(&results)
+	fmt.Println(err)
+	return err
+}
+
+func (s *Storage) WeekNameExistingCheck(name string, weekName int32) error {
+	if weekName == 1 {
+		return errors.New("empty template")
+	}
+	
+	filter := bson.M{
+		"name": bson.M{"$eq": name},
+		"weeklydata": bson.M{"$elemMatch": 
+			bson.M{"weekname":weekName}},
+	}
+
+	var results bson.D
+	err := s.db.FindOne(context.Background(), filter).Decode(&results)
+	fmt.Println(err)
 	return err
 }
 
 //* will be callced from upper layer if check for existing instance fails
 func (s *Storage) CreateDBInstance(name string) {
 	var newFCinstance FuelCycle
-	var newWDinstance WeeklyData
+	var newWDinstance WeeklyData = WeeklyData{WeekName:1}
+	var newDWinstance DetailWeek
 
 	newFCinstance.Name = name
 	newFCinstance.WeeklyData = append(newFCinstance.WeeklyData,
 		newWDinstance)
 
 	newFCinstance.WeeklyData[0].DetailWeek = append(newFCinstance.WeeklyData[0].DetailWeek,
-		DetailWeek{
-			Power:        0.0,
-			FromDate:     "",
-			ToDate:       "",
-			Time:         0.0,
-			EnergyOutput: 0.0,
-		})
+		newDWinstance)
 
 	fmt.Println("creating new instance", newFCinstance)
 	s.db.InsertOne(context.Background(), newFCinstance)
 
 }
 
-// func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
+func (s *Storage) AddWeekTemplate(name string, weekName int32) {
 
-// 	var FC FuelCycle
-// 	var sumTimeFC float64
-// 	var sumEnOutFC float64
-
-// 	FC.Name = formsData.Name
-// 	for k, v := range formsData.WeeklyData {
-// 		fmt.Println(v.Name)
-// 		FC.WeeklyData[k].Name = v.Name
-
-// 		var sumTimeW float64
-// 		var sumEnOutW float64
-
-// 		for _, vv := range v.DetailWeek {
-// 			FC.WeeklyData[k].DetailWeek = append(FC.WeeklyData[k].DetailWeek,
-// 				DetailWeek{
-// 					Power:        vv.Power,
-// 					FromDate:     vv.FromDate,
-// 					ToDate:       vv.ToDate,
-// 					Time:         vv.Time,
-// 					EnergyOutput: vv.EnergyOutput,
-// 				})
-
-// 			sumTimeW += vv.Time
-// 			sumEnOutW += vv.EnergyOutput
-// 		}
-
-// 	s.db.InsertOne(context.TODO(), FC)
-// }
-
-func (s *Storage) ReadWeeklyData(name int32) {
-	curr, err := s.db.Find(context.Background(), bson.D{
-		{"name", 1},
-	})
-
-	if err != nil {
-		panic(err)
+	filter := bson.M{
+		"name": bson.M{"$eq": name},
 	}
 
-	var results []bson.D
-	if err := curr.All(context.TODO(), &results); err != nil {
-		panic(err)
+	update := bson.D{
+		{"$push", bson.D{{"weeklydata", WeeklyData{WeekName: weekName}}}},
 	}
 
-	fmt.Println(results)
+	s.db.UpdateOne(context.Background(),filter, update)
+}
 
+func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
+
+	//* its actually update of existing FC by adding new weekly data
+	var FC FuelCycle
+	var totalTime float64
+	var totalEnOut float64
+
+	FC.Name = formsData.Name
+	
+	for _, v := range formsData.DetailWeek {
+		totalTime += v.Time
+		totalEnOut += v.EnergyOutput
+	}
+
+	filter := bson.M{
+		"name": bson.M{"$eq": FC.Name},
+		"weeklydata": bson.M{"$elemMatch": 
+			bson.M{"weekname":formsData.WeekName}},
+	}
+
+	update := bson.D{
+		{"$inc",  bson.D{
+			{"weeklydata.$.totaltime", totalTime},
+			{"weeklydata.$.totalenouts", totalEnOut},
+			{"totaltime", totalTime},
+			{"totalenouts", totalEnOut},
+		}},
+		{"$set", bson.D{{"weeklydata.$.detailweek", formsData.DetailWeek}}},
+	}
+
+	_, err := s.db.UpdateOne(context.TODO(), filter, update); if err != nil {
+		panic(err)
+	}
 }
 
 func (s *Storage) GetNewWeekNum(name string) int32 {
-	curr, err := s.db.Find(context.Background(), bson.D{
-		{"name", name},
-	})
+	var result FuelCycle
+	err := s.db.FindOne(context.Background(), bson.D{
+		{"name", name}}).Decode(&result); if err != nil {
+			fmt.Println(err)
+		}
 
-	if err != nil {
-		panic(err)
-	}
-
-	var result bson.D
-	curr.Decode(&result)
 	fmt.Println(result)
-	if len(result) > 1 {
-		return 10000
+	if result.TotalTime > 0.0 {
+		//* getting the highest val of week
+		var maxValue int32
+		for _, v := range result.WeeklyData {
+			if v.WeekName > maxValue {
+				maxValue = v.WeekName
+				fmt.Println(maxValue)
+			}
+		}
+		return maxValue+1
 	}
 	return 1
 }
-
-// func (s *Storage) ReadFCOne() {
-// 	var testRead FuelCycle
-// 	// ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-// 	// defer cancel()
-// 	curr, err := s.db.Find(context.Background(), bson.D{})
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	for curr.Next(context.Background()) {
-// 		err := curr.Decode(&testRead)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 	}
-
-// 	fmt.Println(testRead)
-// }
