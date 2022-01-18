@@ -1,11 +1,6 @@
 package NoSQL
 
-import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
-)
-
 type FuelCycle struct {
-	_ID          primitive.ObjectID
 	Name        string
 	TotalTime   float64
 	TotalEnOuts float64
@@ -13,7 +8,7 @@ type FuelCycle struct {
 }
 
 type WeeklyData struct {
-	WeekName    int32	
+	WeekName    int
 	TotalTime   float64
 	TotalEnOuts float64
 	DetailWeek  []DetailWeek

@@ -1,11 +1,16 @@
 package listingDiary
 
 type ListingService interface {
-	GetNewWeekNum(string) int32
+	GetWeeksNum(string) []int
+	WeekDetails(string, int) []DetailWeek
 }
 
 type StorageService interface {
-	GetNewWeekNum(string) int32
+	FCExistingCheck(string) error
+	CreateDBInstance(string)
+	GetWeeksNum(string) []int
+	WeekDetails(string, int) []DetailWeek
+	// getDataForWeek(string)  NoSQL.FuelCycle
 }
 
 type listingService struct {
@@ -16,7 +21,14 @@ func NewListingService(storage StorageService) ListingService {
 	return &listingService{storage: storage}
 }
 
-func (s *listingService) GetNewWeekNum(name string) int32 {
-	weekNum := s.storage.GetNewWeekNum(name)
+func (s *listingService) GetWeeksNum(fcName string) []int {
+
+	weekNum := s.storage.GetWeeksNum(fcName)
 	return weekNum
+}
+
+func (s *listingService) WeekDetails(fcName string, weekName int) []DetailWeek {
+	//* check if it's existing instance
+	data := s.storage.WeekDetails(fcName, weekName)
+	return data
 }

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"refueling/pkg/adding"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +13,8 @@ import (
 func (s *Server) Router() *gin.Engine {
 	router := s.engine
 	router.GET("/refuelingsList", s.RefNames())
-	router.GET("/getNewWeekNum/:fcName", s.NewWeekNum())
+	router.GET("/WeeksNum/:fcName", s.WeeksNum())
+	router.GET("/WeekDetails/:fcName/:weekName", s.WeeekDetails())
 	router.POST("/submitWeekData", s.SubmitWeekData())
 	return router
 }
@@ -24,12 +26,22 @@ func (s *Server) RefNames() gin.HandlerFunc {
 	}
 }
 
-func (s *Server) NewWeekNum() gin.HandlerFunc {
+func (s *Server) WeeksNum() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fcName := c.Param("fcName")
-		weekNum := s.listingD.GetNewWeekNum(fcName)
+		weekNum := s.listingD.GetWeeksNum(fcName)
 		c.IndentedJSON(http.StatusOK, weekNum)
 
+	}
+}
+
+func (s *Server) WeeekDetails() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fcName := c.Param("fcName")
+		weekName, _ := strconv.Atoi(c.Param("weekName"))
+		fmt.Println(fcName, weekName)
+		object := s.listingD.WeekDetails(fcName, weekName)
+		c.IndentedJSON(http.StatusOK, object)
 	}
 }
 

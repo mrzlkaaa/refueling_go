@@ -2,10 +2,11 @@ package NoSQL
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"errors"
 	"refueling/pkg/adding"
+	listingDiary "refueling/pkg/listing/diary"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -48,15 +49,14 @@ func (s *Storage) FCExistingCheck(name string) error {
 	return err
 }
 
-func (s *Storage) WeekNameExistingCheck(name string, weekName int32) error {
+func (s *Storage) WeekNameExistingCheck(name string, weekName int) error {
 	if weekName == 1 {
 		return errors.New("empty template")
 	}
-	
+
 	filter := bson.M{
-		"name": bson.M{"$eq": name},
-		"weeklydata": bson.M{"$elemMatch": 
-			bson.M{"weekname":weekName}},
+		"name":       bson.M{"$eq": name},
+		"weeklydata": bson.M{"$elemMatch": bson.M{"weekname": weekName}},
 	}
 
 	var results bson.D
@@ -68,7 +68,7 @@ func (s *Storage) WeekNameExistingCheck(name string, weekName int32) error {
 //* will be callced from upper layer if check for existing instance fails
 func (s *Storage) CreateDBInstance(name string) {
 	var newFCinstance FuelCycle
-	var newWDinstance WeeklyData = WeeklyData{WeekName:1}
+	var newWDinstance WeeklyData = WeeklyData{WeekName: 1}
 	var newDWinstance DetailWeek
 
 	newFCinstance.Name = name
@@ -83,7 +83,8 @@ func (s *Storage) CreateDBInstance(name string) {
 
 }
 
-func (s *Storage) AddWeekTemplate(name string, weekName int32) {
+//! remove func
+func (s *Storage) AddWeekTemplate(name string, weekName int) {
 
 	filter := bson.M{
 		"name": bson.M{"$eq": name},
@@ -93,62 +94,84 @@ func (s *Storage) AddWeekTemplate(name string, weekName int32) {
 		{"$push", bson.D{{"weeklydata", WeeklyData{WeekName: weekName}}}},
 	}
 
-	s.db.UpdateOne(context.Background(),filter, update)
+	s.db.UpdateOne(context.Background(), filter, update)
 }
 
 func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
 
-	//* its actually update of existing FC by adding new weekly data
 	var FC FuelCycle
-	var totalTime float64
-	var totalEnOut float64
+	var WD WeeklyData
+	// var DW []DetailWeek
+	DW := make([]DetailWeek, len(formsData.DetailWeek))
 
 	FC.Name = formsData.Name
-	
-	for _, v := range formsData.DetailWeek {
-		totalTime += v.Time
-		totalEnOut += v.EnergyOutput
+	WD.WeekName = formsData.WeekName
+
+	fmt.Println(len(formsData.DetailWeek))
+
+	for k, v := range formsData.DetailWeek {
+
+		WD.TotalTime += v.Time
+		WD.TotalEnOuts += v.EnergyOutput
+
+		DW[k].Power = v.Power
+		DW[k].FromDate = v.FromDate
+		DW[k].ToDate = v.ToDate
+		DW[k].Time = v.Time
+		DW[k].EnergyOutput = v.EnergyOutput
+
+		WD.DetailWeek = append(WD.DetailWeek, DW[k])
 	}
 
-	filter := bson.M{
-		"name": bson.M{"$eq": FC.Name},
-		"weeklydata": bson.M{"$elemMatch": 
-			bson.M{"weekname":formsData.WeekName}},
-	}
+	FC.TotalTime = WD.TotalTime
+	FC.TotalEnOuts = WD.TotalEnOuts
 
-	update := bson.D{
-		{"$inc",  bson.D{
-			{"weeklydata.$.totaltime", totalTime},
-			{"weeklydata.$.totalenouts", totalEnOut},
-			{"totaltime", totalTime},
-			{"totalenouts", totalEnOut},
-		}},
-		{"$set", bson.D{{"weeklydata.$.detailweek", formsData.DetailWeek}}},
-	}
+	FC.WeeklyData = append(FC.WeeklyData, WD)
 
-	_, err := s.db.UpdateOne(context.TODO(), filter, update); if err != nil {
-		panic(err)
-	}
+	fmt.Println(FC)
+
+	s.db.InsertOne(context.Background(), FC)
+
 }
 
-func (s *Storage) GetNewWeekNum(name string) int32 {
+func (s *Storage) GetWeeksNum(fcName string) []int {
 	var result FuelCycle
 	err := s.db.FindOne(context.Background(), bson.D{
-		{"name", name}}).Decode(&result); if err != nil {
-			fmt.Println(err)
-		}
+		{"name", fcName}}).Decode(&result)
+	if err != nil {
+		fmt.Println(err)
+		return []int{1}
+	}
 
 	fmt.Println(result)
-	if result.TotalTime > 0.0 {
-		//* getting the highest val of week
-		var maxValue int32
-		for _, v := range result.WeeklyData {
-			if v.WeekName > maxValue {
-				maxValue = v.WeekName
-				fmt.Println(maxValue)
-			}
-		}
-		return maxValue+1
+
+	var values []int
+	var lastValue int
+	for _, v := range result.WeeklyData {
+		values = append(values, v.WeekName)
+		lastValue = v.WeekName + 1
 	}
-	return 1
+	values = append(values, lastValue)
+	return values
+}
+
+func (s *Storage) WeekDetails(fcName string, weekName int) []listingDiary.DetailWeek {
+
+	filter := bson.M{
+		"name":       bson.M{"$eq": fcName},
+		"weeklydata": bson.M{"$elemMatch": bson.M{"weekname": weekName}},
+	}
+
+	var result listingDiary.FuelCycle
+	err := s.db.FindOne(context.Background(), filter).Decode(&result)
+	fmt.Println(err, result)
+
+	//* retrieving only WeekDetails for specific week
+	for _, v := range result.WeeklyData {
+		if v.Name == weekName {
+			return v.DetailWeek
+		}
+	}
+
+	return []listingDiary.DetailWeek{}
 }
