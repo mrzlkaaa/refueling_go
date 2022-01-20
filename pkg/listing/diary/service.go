@@ -6,8 +6,6 @@ type ListingService interface {
 }
 
 type StorageService interface {
-	FCExistingCheck(string) error
-	CreateDBInstance(string)
 	GetWeeksNum(string) []int
 	WeekDetails(string, int) []DetailWeek
 	// getDataForWeek(string)  NoSQL.FuelCycle

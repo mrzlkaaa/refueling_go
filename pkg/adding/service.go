@@ -6,10 +6,10 @@ type AddingService interface {
 
 type StorageService interface {
 	FCExistingCheck(string) error
-	CreateDBInstance(string)
-	AddWeeklyData(*FuelCycle)
 	WeekNameExistingCheck(string, int) error
-	AddWeekTemplate(string, int)
+	AddWeeklyData(*FuelCycle)
+	UpdateWeeklyData(*FuelCycle)
+	AppendWeeklyData(*FuelCycle)
 }
 
 type service struct {
@@ -24,10 +24,19 @@ func (s *service) AddWeeklyData(formsData *FuelCycle) {
 
 	//! review required if update feature is enabled
 	// //* call fun to check if week name exists
-	// err := s.storage.WeekNameExistingCheck(formsData.Name, formsData.WeekName)
-	// if err == nil {
-	// 	panic("exists!")
-	// }
+	if err := s.storage.FCExistingCheck(formsData.Name); err != nil {
+		s.storage.AddWeeklyData(formsData)
+		return
+	}
+
+	//* take the same db instance as a base
+	if err := s.storage.WeekNameExistingCheck(formsData.Name, formsData.WeekName); err == nil {
+		s.storage.UpdateWeeklyData(formsData)
+	} else {
+		s.storage.AppendWeeklyData(formsData)
+	}
+	return
+
 	// err = s.storage.FCExistingCheck(formsData.Name)
 	// if err != nil {
 	// 	//* call func to create instance
@@ -35,8 +44,5 @@ func (s *service) AddWeeklyData(formsData *FuelCycle) {
 	// }
 	//* call func to update existing instance by adding new week template and data
 	// s.storage.AddWeekTemplate(formsData.Name, formsData.WeekName)
-	s.storage.AddWeeklyData(formsData)
 
 }
-
-//

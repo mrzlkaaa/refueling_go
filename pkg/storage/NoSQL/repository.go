@@ -2,7 +2,6 @@ package NoSQL
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"refueling/pkg/adding"
@@ -38,99 +37,110 @@ func NewStorage() *Storage {
 	return &Storage{db: collection}
 }
 
-func (s *Storage) FCExistingCheck(name string) error {
+func (s *Storage) FCExistingCheck(fcName string) error {
 	filter := bson.M{
-		"name": bson.M{"$eq": name},
-	}
+		"name": bson.M{"$eq": fcName}}
 
-	var results bson.D
-	err := s.db.FindOne(context.Background(), filter).Decode(&results)
-	fmt.Println(err)
+	var result bson.D
+	err := s.db.FindOne(context.Background(), filter).Decode(&result)
 	return err
 }
 
-func (s *Storage) WeekNameExistingCheck(name string, weekName int) error {
-	if weekName == 1 {
-		return errors.New("empty template")
-	}
-
+func (s *Storage) WeekNameExistingCheck(fcName string, weekName int) error {
 	filter := bson.M{
-		"name":       bson.M{"$eq": name},
+		"name":       bson.M{"$eq": fcName},
 		"weeklydata": bson.M{"$elemMatch": bson.M{"weekname": weekName}},
 	}
 
-	var results bson.D
-	err := s.db.FindOne(context.Background(), filter).Decode(&results)
+	var result FuelCycle
+	err := s.db.FindOne(context.Background(), filter).Decode(&result)
 	fmt.Println(err)
 	return err
-}
-
-//* will be callced from upper layer if check for existing instance fails
-func (s *Storage) CreateDBInstance(name string) {
-	var newFCinstance FuelCycle
-	var newWDinstance WeeklyData = WeeklyData{WeekName: 1}
-	var newDWinstance DetailWeek
-
-	newFCinstance.Name = name
-	newFCinstance.WeeklyData = append(newFCinstance.WeeklyData,
-		newWDinstance)
-
-	newFCinstance.WeeklyData[0].DetailWeek = append(newFCinstance.WeeklyData[0].DetailWeek,
-		newDWinstance)
-
-	fmt.Println("creating new instance", newFCinstance)
-	s.db.InsertOne(context.Background(), newFCinstance)
-
-}
-
-//! remove func
-func (s *Storage) AddWeekTemplate(name string, weekName int) {
-
-	filter := bson.M{
-		"name": bson.M{"$eq": name},
-	}
-
-	update := bson.D{
-		{"$push", bson.D{{"weeklydata", WeeklyData{WeekName: weekName}}}},
-	}
-
-	s.db.UpdateOne(context.Background(), filter, update)
 }
 
 func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
 
 	var FC FuelCycle
 	var WD WeeklyData
-	// var DW []DetailWeek
-	DW := make([]DetailWeek, len(formsData.DetailWeek))
+	var DW DetailWeek
 
 	FC.Name = formsData.Name
 	WD.WeekName = formsData.WeekName
 
 	fmt.Println(len(formsData.DetailWeek))
 
-	for k, v := range formsData.DetailWeek {
+	PopulatingWD_DW(&WD, &DW, formsData)
 
-		WD.TotalTime += v.Time
-		WD.TotalEnOuts += v.EnergyOutput
-
-		DW[k].Power = v.Power
-		DW[k].FromDate = v.FromDate
-		DW[k].ToDate = v.ToDate
-		DW[k].Time = v.Time
-		DW[k].EnergyOutput = v.EnergyOutput
-
-		WD.DetailWeek = append(WD.DetailWeek, DW[k])
-	}
-
-	FC.TotalTime = WD.TotalTime
-	FC.TotalEnOuts = WD.TotalEnOuts
+	FC.TotalTime += WD.TotalTime
+	FC.TotalEnOuts += WD.TotalEnOuts
 
 	FC.WeeklyData = append(FC.WeeklyData, WD)
 
-	fmt.Println(FC)
+	fmt.Println("added new: ", FC)
 
 	s.db.InsertOne(context.Background(), FC)
+
+}
+
+func (s *Storage) AppendWeeklyData(formsData *adding.FuelCycle) {
+
+	var WD WeeklyData
+	var DW DetailWeek
+	WD.WeekName = formsData.WeekName
+	PopulatingWD_DW(&WD, &DW, formsData)
+
+	filter := bson.M{
+		"name": bson.M{"$eq": formsData.Name},
+	}
+	update := bson.M{
+		"$inc": bson.D{
+			{"totaltime", WD.TotalTime},
+			{"totalenouts", WD.TotalEnOuts},
+		},
+		"$push": bson.D{{"weeklydata", WD}},
+	}
+	fmt.Println("appended new: ", WD)
+	s.db.UpdateOne(context.Background(), filter, update)
+}
+
+func (s *Storage) UpdateWeeklyData(formsData *adding.FuelCycle) {
+
+	var FCcurrent FuelCycle
+	var WD WeeklyData
+	var DW DetailWeek
+
+	PopulatingWD_DW(&WD, &DW, formsData)
+
+	arrayIndex := formsData.WeekName - 1
+	fmt.Println("weekanme from form is :", formsData.WeekName)
+
+	filter := bson.M{
+		"name":       bson.M{"$eq": formsData.Name},
+		"weeklydata": bson.M{"$elemMatch": bson.M{"weekname": formsData.WeekName}},
+	}
+
+	s.db.FindOne(context.Background(), filter).Decode(&FCcurrent)
+
+	//* calc diff in time and enOuts for FC
+	//* replace existing DetailWeek on new one
+	WD.WeekName = formsData.WeekName
+	FCcurrent.TotalTime += WD.TotalTime - FCcurrent.WeeklyData[arrayIndex].TotalTime
+	FCcurrent.TotalEnOuts += WD.TotalEnOuts - FCcurrent.WeeklyData[arrayIndex].TotalEnOuts
+	FCcurrent.WeeklyData[arrayIndex] = WD
+
+	fmt.Println(FCcurrent.WeeklyData[arrayIndex])
+
+	update := bson.M{
+		"$set": bson.D{
+			{"totaltime", FCcurrent.TotalTime},
+			{"totalenouts", FCcurrent.TotalEnOuts},
+			{"weeklydata", FCcurrent.WeeklyData},
+		},
+	}
+	fmt.Println("updated to new: ", FCcurrent)
+	if res, err := s.db.UpdateOne(context.Background(), filter, update); err != nil {
+		fmt.Println(res, err)
+	}
 
 }
 
@@ -174,4 +184,21 @@ func (s *Storage) WeekDetails(fcName string, weekName int) []listingDiary.Detail
 	}
 
 	return []listingDiary.DetailWeek{}
+}
+
+func PopulatingWD_DW(WD *WeeklyData, DW *DetailWeek, formsData *adding.FuelCycle) {
+
+	for _, v := range formsData.DetailWeek {
+
+		WD.TotalTime += v.Time
+		WD.TotalEnOuts += v.EnergyOutput
+
+		DW.Power = v.Power
+		DW.FromDate = v.FromDate
+		DW.ToDate = v.ToDate
+		DW.Time = v.Time
+		DW.EnergyOutput = v.EnergyOutput
+
+		WD.DetailWeek = append(WD.DetailWeek, *DW)
+	}
 }
