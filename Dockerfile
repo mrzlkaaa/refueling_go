@@ -7,6 +7,6 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /refuel ./cmd/
+RUN go build -o /refuelDiary ./cmd/
 
-CMD [ "/refuel" ]
+CMD [ "/refuelDiary" ]
