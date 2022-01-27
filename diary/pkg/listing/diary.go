@@ -1,4 +1,4 @@
-package listingDiary
+package listing
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 

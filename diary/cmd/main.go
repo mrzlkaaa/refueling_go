@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"refueling/pkg/adding"
-	listingDiary "refueling/pkg/listing/diary"
-	listingRefuels "refueling/pkg/listing/refuels"
-	"refueling/pkg/server"
-	"refueling/pkg/storage/NoSQL"
-	"refueling/pkg/storage/SQL"
+	"refueling/diary/pkg/adding"
+	"refueling/diary/pkg/listing"
+	"refueling/diary/pkg/server"
+	"refueling/diary/pkg/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,12 +15,10 @@ func main() {
 	// gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
 	engine.Use(CORSMiddleware())
-	strgNoSQL := NoSQL.NewStorage()
-	strgeSQL := SQL.NewStorage()
-	adding := adding.NewService(strgNoSQL)
-	listingR := listingRefuels.NewListingService(strgeSQL)
-	listingD := listingDiary.NewListingService(strgNoSQL)
-	srvr := server.NewServer(engine, listingR, listingD, adding)
+	storage := storage.NewStorage()
+	adding := adding.NewService(storage)
+	listing := listing.NewListingService(storage)
+	srvr := server.NewServer(engine, listing, adding)
 	srvr.Run()
 
 }

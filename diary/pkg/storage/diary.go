@@ -1,4 +1,4 @@
-package NoSQL
+package storage
 
 type FuelCycle struct {
 	Name        string

@@ -1,11 +1,11 @@
-package NoSQL
+package storage
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"refueling/pkg/adding"
-	listingDiary "refueling/pkg/listing/diary"
+	"refueling/diary/pkg/adding"
+	"refueling/diary/pkg/listing"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,7 +17,7 @@ type Storage struct {
 }
 
 func NewStorage() *Storage {
-	clientOptions := options.Client().ApplyURI("mongodb://irt-t.ru:3000")
+	clientOptions := options.Client().ApplyURI("mongodb://irt-t.ru:3000") //! change to envVar
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
@@ -165,14 +165,14 @@ func (s *Storage) GetWeeksNum(fcName string) []int {
 	return values
 }
 
-func (s *Storage) WeekDetails(fcName string, weekName int) []listingDiary.DetailWeek {
+func (s *Storage) WeekDetails(fcName string, weekName int) []listing.DetailWeek {
 
 	filter := bson.M{
 		"name":       bson.M{"$eq": fcName},
 		"weeklydata": bson.M{"$elemMatch": bson.M{"weekname": weekName}},
 	}
 
-	var result listingDiary.FuelCycle
+	var result listing.FuelCycle
 	err := s.db.FindOne(context.Background(), filter).Decode(&result)
 	fmt.Println(err, result)
 
@@ -183,7 +183,7 @@ func (s *Storage) WeekDetails(fcName string, weekName int) []listingDiary.Detail
 		}
 	}
 
-	return []listingDiary.DetailWeek{}
+	return []listing.DetailWeek{}
 }
 
 func PopulatingWD_DW(WD *WeeklyData, DW *DetailWeek, formsData *adding.FuelCycle) {

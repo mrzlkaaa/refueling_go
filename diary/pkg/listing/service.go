@@ -1,4 +1,4 @@
-package listingDiary
+package listing
 
 type ListingService interface {
 	GetWeeksNum(string) []int
