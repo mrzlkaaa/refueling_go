@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"refueling/diary/pkg/adding"
 	"refueling/diary/pkg/listing"
+
+	"github.com/joho/godotenv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,8 +19,16 @@ type Storage struct {
 	db *mongo.Collection
 }
 
+func LoadEnv() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func NewStorage() *Storage {
-	clientOptions := options.Client().ApplyURI("mongodb://irt-t.ru:3000") //! change to envVar
+	LoadEnv()
+	URI := fmt.Sprintf("mongodb://%v:%v", os.Getenv("HOST"), os.Getenv("PORT"))
+	clientOptions := options.Client().ApplyURI(URI)
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
@@ -32,7 +43,7 @@ func NewStorage() *Storage {
 	}
 
 	fmt.Println("Connected to MongoDB!")
-	collection := client.Database("enOutDiary").Collection("Diary")
+	collection := client.Database(os.Getenv("DB")).Collection(os.Getenv("COLLECTION"))
 
 	return &Storage{db: collection}
 }
