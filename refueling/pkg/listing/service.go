@@ -1,15 +1,11 @@
 package listing
 
-import (
-	"refueling/refueling/pkg/storage"
-)
-
 type ListingService interface {
-	GetRefuelNames() map[string][]string
+	GetRefuelNames() map[string][]int
 }
 
 type StorageService interface {
-	GetRefuelNamesQuery() []storage.ReactorRefuel
+	GetRefuelNames() []Refuel
 }
 
 type listingService struct {
@@ -20,12 +16,12 @@ func NewListingService(storage StorageService) ListingService {
 	return &listingService{storage: storage}
 }
 
-func (s *listingService) GetRefuelNames() map[string][]string {
-	mapQuery := make(map[string][]string)
-	data := s.storage.GetRefuelNamesQuery()
-	var names []string
+func (s *listingService) GetRefuelNames() map[string][]int {
+	mapQuery := make(map[string][]int)
+	data := s.storage.GetRefuelNames()
+	var names []int
 	for _, v := range data {
-		names = append(names, v.Refueling_name)
+		names = append(names, v.RefuelName)
 	}
 	mapQuery["names"] = names
 	return mapQuery
