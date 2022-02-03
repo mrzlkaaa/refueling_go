@@ -8,9 +8,9 @@ type Refuel struct {
 }
 
 type Act struct {
-	ID          uint `gorm:"primaryKey"`
+	ID          uint `gorm:"foreignKey:RefuelID"`
 	Name        string
-	CoreConfig  []byte
+	CoreConfig  [][]string
 	Description string
 	RefuelID    int
 }

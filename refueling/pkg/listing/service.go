@@ -2,10 +2,15 @@ package listing
 
 type ListingService interface {
 	GetRefuelNames() map[string][]int
+	Refuels() []Refuel
+	RefuelDetails(int) []Act
+	RefuelPDC(int) []string
 }
 
 type StorageService interface {
 	GetRefuelNames() []Refuel
+	RefuelDetails(int) []Act
+	RefuelPDC(int) []string
 }
 
 type listingService struct {
@@ -25,4 +30,19 @@ func (s *listingService) GetRefuelNames() map[string][]int {
 	}
 	mapQuery["names"] = names
 	return mapQuery
+}
+
+func (s *listingService) Refuels() []Refuel {
+	data := s.storage.GetRefuelNames()
+	return data
+}
+
+func (s *listingService) RefuelDetails(id int) []Act {
+	data := s.storage.RefuelDetails(id)
+	return data
+}
+
+func (s *listingService) RefuelPDC(id int) []string {
+	data := s.storage.RefuelPDC(id)
+	return data
 }
