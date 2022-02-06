@@ -19,7 +19,7 @@ func (s *Server) Router() *gin.Engine {
 	router.GET("/refuelingsList", s.RefNames())
 	router.GET("/refuelings", s.Refuels())
 	router.GET("/refuelings/:id/details", s.RefuelDetails())
-	router.GET("/refuelings/:id/PDC", s.RefuelPDC())
+	router.GET("/refuelings/:id/:actId/PDC", s.RefuelPDC())
 	router.POST("/add", s.Add())
 	return router
 }
@@ -49,7 +49,7 @@ func (s *Server) RefuelDetails() gin.HandlerFunc {
 
 func (s *Server) RefuelPDC() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		idstr := c.Param("id")
+		idstr := c.Param("actId")
 		id, _ := strconv.Atoi(idstr)
 		data := s.listing.RefuelPDC(id)
 		c.JSON(http.StatusOK, data)
