@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+var NotFoundErr error = errors.New("Requested data not found")
 
 type Storage struct {
 	db *gorm.DB
@@ -96,11 +99,44 @@ func (s *Storage) Adding(refuel adding.Refuel) error {
 		act.PDC = *FormatterPDC(&v.PDC)
 		ref.Acts = append(ref.Acts, act)
 	}
-	err := s.db.Create(&ref)
-	if err != nil {
-		return err.Error
+	res := s.db.Create(&ref)
+	if res.Error != nil {
+		return res.Error
 	}
 	return nil
+}
+
+func (s *Storage) AddingAct(act adding.Act) (error, uint) {
+	var ac Act
+	ac.Name = act.Name
+	ac.CoreConfig = FormatterCoreConfig(act.CoreConfig)
+	ac.PDC = *FormatterPDC(&act.PDC)
+	ac.Description = act.Description
+	ac.RefuelID = act.RefuelID
+	res := s.db.Create(&ac)
+	return res.Error, ac.ID
+}
+
+func (s *Storage) Deleting(id int) error {
+	var act Act
+	act.RefuelID = id
+	res := s.db.Delete(&act)
+	if res.RowsAffected == 0 {
+		return NotFoundErr
+	}
+	res = s.db.Delete(&Refuel{}, uint(id))
+	if res.RowsAffected == 0 {
+		return NotFoundErr
+	}
+	return res.Error
+}
+
+func (s *Storage) DeletingAct(id int) error {
+	res := s.db.Delete(&Act{}, uint(id))
+	if res.RowsAffected == 0 {
+		return NotFoundErr
+	}
+	return res.Error
 }
 
 func FormatterCoreConfig(coreConfig [][]string) []byte {
