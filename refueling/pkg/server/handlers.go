@@ -25,6 +25,7 @@ func (s *Server) Router() *gin.Engine {
 	router.GET("/refuelings", s.Refuels())
 	router.GET("/refuelings/:id/details", s.RefuelDetails())
 	router.GET("/refuelings/:id/:actId/PDC", s.RefuelPDC())
+	router.GET("/refuelings/:id/:actId/download", s.Download())
 	router.POST("/add", s.Add())
 	router.POST("/add-act", s.AddAct())
 	router.POST("/refuelings/:id/:actId/delete", s.DeleteAct())
@@ -136,5 +137,22 @@ func (s *Server) DeleteAct() gin.HandlerFunc {
 			return
 		}
 		c.IndentedJSON(http.StatusOK, statusOkDelete)
+	}
+}
+
+func (s *Server) Download() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idParam := c.Param("id")
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			panic(err)
+		}
+		actIdParam := c.Param("actId")
+		actId, err := strconv.Atoi(actIdParam)
+		if err != nil {
+			panic(err)
+		}
+		path := s.download.SavePDC(id, actId)
+		c.IndentedJSON(http.StatusOK, path)
 	}
 }

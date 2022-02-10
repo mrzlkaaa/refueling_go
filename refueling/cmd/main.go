@@ -2,6 +2,7 @@ package main
 
 import (
 	"refueling/refueling/pkg/adding"
+	"refueling/refueling/pkg/download"
 	"refueling/refueling/pkg/listing"
 	"refueling/refueling/pkg/server"
 	"refueling/refueling/pkg/storage"
@@ -17,7 +18,8 @@ func main() {
 	storage := storage.NewStorage()
 	adding := adding.NewService(storage)
 	listing := listing.NewListingService(storage)
-	srvr := server.NewServer(engine, adding, listing)
+	download := download.NewService(storage)
+	srvr := server.NewServer(engine, adding, listing, download)
 	srvr.Run()
 
 }

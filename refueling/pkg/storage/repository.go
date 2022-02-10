@@ -7,7 +7,6 @@ import (
 	"os"
 	"refueling/refueling/pkg/adding"
 	"refueling/refueling/pkg/listing"
-	"strings"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -83,6 +82,13 @@ func (s *Storage) RefuelPDC(id int) []string {
 	return arr
 }
 
+func (s *Storage) SavePDC(id int) (string, *[]byte) {
+	var binded Act
+	uid := uint(id)
+	s.db.Select("name", "pdc").Where(Act{ID: uid}).Find(&binded)
+	return binded.Name, &binded.PDC
+}
+
 func (s *Storage) Adding(refuel adding.Refuel) error {
 	var ref Refuel
 	var act Act
@@ -95,7 +101,7 @@ func (s *Storage) Adding(refuel adding.Refuel) error {
 	for _, v := range refuel.Acts {
 		act.Name = v.Name
 		act.Description = v.Description
-		act.CoreConfig = FormatterCoreConfig(v.CoreConfig)
+		act.CoreConfig = *FormatterCoreConfig(&v.CoreConfig)
 		act.PDC = *FormatterPDC(&v.PDC)
 		ref.Acts = append(ref.Acts, act)
 	}
@@ -109,7 +115,7 @@ func (s *Storage) Adding(refuel adding.Refuel) error {
 func (s *Storage) AddingAct(act adding.Act) (error, uint) {
 	var ac Act
 	ac.Name = act.Name
-	ac.CoreConfig = FormatterCoreConfig(act.CoreConfig)
+	ac.CoreConfig = *FormatterCoreConfig(&act.CoreConfig)
 	ac.PDC = *FormatterPDC(&act.PDC)
 	ac.Description = act.Description
 	ac.RefuelID = act.RefuelID
@@ -119,8 +125,9 @@ func (s *Storage) AddingAct(act adding.Act) (error, uint) {
 
 func (s *Storage) Deleting(id int) error {
 	var act Act
-	act.RefuelID = id
-	res := s.db.Delete(&act)
+	// act.RefuelID = id
+	res := s.db.Where("refuel_id = ?", id).Delete(&act)
+	fmt.Println(res.Error)
 	if res.RowsAffected == 0 {
 		return NotFoundErr
 	}
@@ -138,77 +145,3 @@ func (s *Storage) DeletingAct(id int) error {
 	}
 	return res.Error
 }
-
-func FormatterCoreConfig(coreConfig [][]string) []byte {
-	var str string
-	sliceLen := len(coreConfig)
-	for i, vv := range coreConfig {
-		for _, elem := range vv {
-			str += elem + ","
-		}
-		if sliceLen == i+1 {
-			str = str[:len(str)-1]
-		}
-	}
-	formattedConfig := []byte(str)
-
-	return formattedConfig
-}
-
-func BackFormatterCoreConfig(coreConfig *[]byte) *[][]string {
-	var str string
-	var firstArr []string
-	var arr2D [][]string
-
-	for _, v := range *coreConfig { //*conv to str
-		str += string(v)
-	}
-	array := strings.Split(str, ",")
-	for i, v := range array {
-		i += 1
-		firstArr = append(firstArr, v)
-		if i%4 == 0 {
-			arr2D = append(arr2D, firstArr)
-			firstArr = []string{}
-		}
-	}
-	return &arr2D
-}
-
-func FormatterPDC(pdc *[]string) *[]byte {
-	joined := strings.Join(*pdc, "")
-	formattedPDC := []byte(joined)
-	return &formattedPDC
-}
-
-func BackFormatterPDC(pdc *[]byte) *[]string {
-	var str string
-	var arr []string
-	// for _, v := range *pdc { //*conv to str
-	// 	str += string(v)
-	// }
-	str = string(*pdc)
-	arr = strings.Split(str, "\n")
-	for i := 0; i < len(arr); i++ {
-		arr[i] += "\n"
-	}
-	// arr = append(arr, str)
-	return &arr
-}
-
-// var configs []string //* change to [][]byte for latter ease assign
-// 	for _, v := range refuel.Acts {
-// 		var str string
-// 		sliceLen := len(v.CoreConfig)
-// 		for i, vv := range v.CoreConfig {
-// 			for _, elem := range vv {
-// 				str += elem + ","
-// 			}
-// 			if sliceLen == i+1 {
-// 				str = str[:len(str)-1]
-// 			}
-// 			// fmt.Println(str)
-// 		}
-// 		configs = append(configs, str)
-// 	}
-// 	fmt.Println(configs)
