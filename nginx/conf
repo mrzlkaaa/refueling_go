@@ -12,7 +12,7 @@ upstream proc {
 
 server {
 listen 88;
-server_name www.refuel.nss-irt-t.xyz;
+server_name refuel.nss-irt-t.xyz;
 
     location /refuelings {
         proxy_pass http://refueling/refuelings;
@@ -24,7 +24,7 @@ server_name www.refuel.nss-irt-t.xyz;
 
 server {
 listen 89;
-server_name www.diary.nss-irt-t.xyz;
+server_name diary.nss-irt-t.xyz;
 
     location ~* ^/weeksNum/(.*) {
         proxy_pass http://diar/weeksNum/$1;
@@ -42,7 +42,7 @@ server_name www.diary.nss-irt-t.xyz;
 
 server {
     listen 8000;
-    server_name www.proc.nss-irt-t.xyz;
+    server_name proc.nss-irt-t.xyz;
 
     location /average {
         proxy_pass http://proc/average;
