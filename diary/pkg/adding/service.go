@@ -35,7 +35,7 @@ func (s *service) AddWeeklyData(formsData *FuelCycle) {
 	} else {
 		s.storage.AppendWeeklyData(formsData)
 	}
-	return
+	// return
 
 	// err = s.storage.FCExistingCheck(formsData.Name)
 	// if err != nil {

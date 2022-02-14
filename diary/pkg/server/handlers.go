@@ -12,8 +12,8 @@ import (
 
 func (s *Server) Router() *gin.Engine {
 	router := s.engine
-	router.GET("/WeeksNum/:fcName", s.WeeksNum())
-	router.GET("/WeekDetails/:fcName/:weekName", s.WeeekDetails())
+	router.GET("/weeksNum/:fcName", s.WeeksNum())
+	router.GET("/weekDetails/:fcName/:weekName", s.WeeekDetails())
 	router.POST("/submitWeekData", s.SubmitWeekData())
 	return router
 }

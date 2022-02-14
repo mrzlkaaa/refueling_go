@@ -1,0 +1,92 @@
+upstream refueling {
+    server refuel:8888; #* put name of service + port
+}
+
+upstream diar {
+    server diary:8889; #* put name of service + port
+}
+
+upstream proc {
+    server processing:8890; #* put name of service + port
+}
+
+server {
+listen 88;
+server_name www.refuel.nss-irt-t.xyz;
+
+    location /refuelings {
+        proxy_pass http://refueling/refuelings;
+    }
+    location /add {
+        proxy_pass http://refueling/add;
+    }
+}
+
+server {
+listen 89;
+server_name www.diary.nss-irt-t.xyz;
+
+    location ~* ^/weeksNum/(.*) {
+        proxy_pass http://diar/weeksNum/$1;
+    }
+
+    location ~* ^/weekDetails/(.*)/(.*) {
+        proxy_pass http://diar/weekDetails/$1/$2;
+    }
+
+    location /submitWeekData {
+        proxy_pass http://diar/submitWeekData;
+    }
+    
+}
+
+server {
+    listen 8000;
+    server_name www.proc.nss-irt-t.xyz;
+
+    location /average {
+        proxy_pass http://proc/average;
+    }
+
+    location /change {
+        proxy_pass http://proc/change;
+    }
+
+}
+
+
+    # location ~* ^/refuelings/(.*)/delete {
+    #     proxy_pass http://refueling/$1/detail; 
+    # }
+    # location /upload_PDC {
+    #     proxy_pass http://python/upload_PDC; 
+    #     rewrite ^/upload_PDC?$ /reading_file break;
+    # }
+
+    # location /refuels {
+    #     proxy_pass http://front/refuels; 
+    #     # try_files $uri  /index.html;
+    # }
+
+    # location /reading_file {
+    #     proxy_pass http://python/reading_file; 
+    # }
+
+    # location /refueling {
+    #     proxy_pass http://python/refueling; 
+    # }
+
+    # location ~* ^/detail/(.*) {
+    #     proxy_pass http://python/detail/$1; 
+    # }
+
+    # location ~* ^/update/(.*) {
+    #     proxy_pass http://python/update/$1; 
+    # }
+
+    # location ~* ^/(.*)/delete {
+    #     proxy_pass http://python/$1/delete; 
+    # }
+
+    # location ~* ^/download/(.*) {
+    #     proxy_pass http://python/download/$1; 
