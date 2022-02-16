@@ -48,7 +48,7 @@ func NewStorage() *Storage {
 	return &Storage{db: collection}
 }
 
-func (s *Storage) FCExistingCheck(fcName string) error {
+func (s *Storage) FCExistingCheck(fcName int) error {
 	filter := bson.M{
 		"name": bson.M{"$eq": fcName}}
 
@@ -57,7 +57,7 @@ func (s *Storage) FCExistingCheck(fcName string) error {
 	return err
 }
 
-func (s *Storage) WeekNameExistingCheck(fcName string, weekName int) error {
+func (s *Storage) WeekNameExistingCheck(fcName int, weekName int) error {
 	filter := bson.M{
 		"name":       bson.M{"$eq": fcName},
 		"weeklydata": bson.M{"$elemMatch": bson.M{"weekname": weekName}},
@@ -155,7 +155,25 @@ func (s *Storage) UpdateWeeklyData(formsData *adding.FuelCycle) {
 
 }
 
-func (s *Storage) GetWeeksNum(fcName string) []int {
+func (s Storage) OverallData() []listing.FuelCycle {
+	var FC []listing.FuelCycle
+	// var WD []WeeklyData
+	// var DW []DetailWeek
+
+	// FC.WeeklyData = append(FC.WeeklyData, WD)
+	opts := options.Find().SetSort(bson.D{{"name", -1}})
+	crs, err := s.db.Find(context.Background(), bson.D{}, opts)
+	if err != nil {
+		panic(err)
+	}
+	if err = crs.All(context.Background(), &FC); err != nil {
+		panic(err)
+	}
+	fmt.Println(FC)
+	return FC
+}
+
+func (s *Storage) GetWeeksNum(fcName int) []int {
 	var result FuelCycle
 	err := s.db.FindOne(context.Background(), bson.D{
 		{"name", fcName}}).Decode(&result)
@@ -176,7 +194,7 @@ func (s *Storage) GetWeeksNum(fcName string) []int {
 	return values
 }
 
-func (s *Storage) WeekDetails(fcName string, weekName int) []listing.DetailWeek {
+func (s *Storage) WeekDetails(fcName int, weekName int) []listing.DetailWeek {
 
 	filter := bson.M{
 		"name":       bson.M{"$eq": fcName},

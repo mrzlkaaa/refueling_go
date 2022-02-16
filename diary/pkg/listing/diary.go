@@ -29,7 +29,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 //* structs below more suitable for listing section
 type FuelCycle struct {
 	ID          primitive.ObjectID `bson:"_id, omitempty"`
-	Name        string             `bson:"name"`
+	Name        float64            `bson:"name, truncate"`
 	TotalTime   float64            `bson:"totaltime"`
 	TotalEnOuts float64            `bson:"totalenouts"`
 	WeeklyData  []WeeklyData       `bson:"weeklydata"`

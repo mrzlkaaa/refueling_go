@@ -5,8 +5,8 @@ type AddingService interface {
 }
 
 type StorageService interface {
-	FCExistingCheck(string) error
-	WeekNameExistingCheck(string, int) error
+	FCExistingCheck(int) error
+	WeekNameExistingCheck(int, int) error
 	AddWeeklyData(*FuelCycle)
 	UpdateWeeklyData(*FuelCycle)
 	AppendWeeklyData(*FuelCycle)

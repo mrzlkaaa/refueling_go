@@ -1,7 +1,7 @@
 package storage
 
 type FuelCycle struct {
-	Name        string
+	Name        int
 	TotalTime   float64
 	TotalEnOuts float64
 	WeeklyData  []WeeklyData

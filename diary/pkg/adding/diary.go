@@ -1,7 +1,7 @@
 package adding
 
 type FuelCycle struct {
-	Name       string       `json:"fcName"`
+	Name       int          `json:"fcName"`
 	WeekName   int          `json:"week"`
 	DetailWeek []DetailWeek `json:"weeklyDetail"`
 }

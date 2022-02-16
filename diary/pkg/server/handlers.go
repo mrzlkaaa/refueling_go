@@ -12,24 +12,31 @@ import (
 
 func (s *Server) Router() *gin.Engine {
 	router := s.engine
+	router.GET("/overallData", s.OverallData())
 	router.GET("/weeksNum/:fcName", s.WeeksNum())
 	router.GET("/weekDetails/:fcName/:weekName", s.WeeekDetails())
 	router.POST("/submitWeekData", s.SubmitWeekData())
 	return router
 }
 
+func (s *Server) OverallData() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		data := s.listing.OverallData()
+		c.IndentedJSON(http.StatusOK, data)
+	}
+}
+
 func (s *Server) WeeksNum() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fcName := c.Param("fcName")
+		fcName, _ := strconv.Atoi(c.Param("fcName"))
 		weekNum := s.listing.GetWeeksNum(fcName)
 		c.IndentedJSON(http.StatusOK, weekNum)
-
 	}
 }
 
 func (s *Server) WeeekDetails() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fcName := c.Param("fcName")
+		fcName, _ := strconv.Atoi(c.Param("fcName"))
 		weekName, _ := strconv.Atoi(c.Param("weekName"))
 		fmt.Println(fcName, weekName)
 		object := s.listing.WeekDetails(fcName, weekName)

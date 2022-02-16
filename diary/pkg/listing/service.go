@@ -1,13 +1,15 @@
 package listing
 
 type ListingService interface {
-	GetWeeksNum(string) []int
-	WeekDetails(string, int) []DetailWeek
+	GetWeeksNum(int) []int
+	WeekDetails(int, int) []DetailWeek
+	OverallData() []FuelCycle
 }
 
 type StorageService interface {
-	GetWeeksNum(string) []int
-	WeekDetails(string, int) []DetailWeek
+	GetWeeksNum(int) []int
+	WeekDetails(int, int) []DetailWeek
+	OverallData() []FuelCycle
 	// getDataForWeek(string)  NoSQL.FuelCycle
 }
 
@@ -19,13 +21,17 @@ func NewListingService(storage StorageService) ListingService {
 	return &listingService{storage: storage}
 }
 
-func (s *listingService) GetWeeksNum(fcName string) []int {
+func (s listingService) OverallData() []FuelCycle {
+	data := s.storage.OverallData()
+	return data
+}
 
+func (s *listingService) GetWeeksNum(fcName int) []int {
 	weekNum := s.storage.GetWeeksNum(fcName)
 	return weekNum
 }
 
-func (s *listingService) WeekDetails(fcName string, weekName int) []DetailWeek {
+func (s *listingService) WeekDetails(fcName int, weekName int) []DetailWeek {
 	//* check if it's existing instance
 	data := s.storage.WeekDetails(fcName, weekName)
 	return data
