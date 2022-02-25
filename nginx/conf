@@ -26,6 +26,10 @@ server {
 listen 89;
 server_name diary.nss-irt-t.xyz;
 
+    location /overallData {
+        proxy_pass http://diar/overallData;
+    }
+
     location ~* ^/weeksNum/(.*) {
         proxy_pass http://diar/weeksNum/$1;
     }

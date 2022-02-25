@@ -21,7 +21,7 @@ func NewServer(engine *gin.Engine, listing listing.ListingService,
 
 func (s *Server) Run() {
 	router := s.Router()
-	err := router.Run(":8889")
+	err := router.Run(":8809")
 	if err != nil {
 		panic(err)
 	}

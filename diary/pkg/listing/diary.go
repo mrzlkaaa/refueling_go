@@ -36,10 +36,11 @@ type FuelCycle struct {
 }
 
 type WeeklyData struct {
-	Name        int          `bson:"weekname"`
-	TotalTime   float64      `bson:"totaltime"`
-	TotalEnOuts float64      `bson:"totalenouts"`
-	DetailWeek  []DetailWeek `bson:"detailweek"`
+	Name         int          `bson:"weekname"`
+	RodsPosition RodsPosition `bson:"rodsposition"`
+	TotalTime    float64      `bson:"totaltime"`
+	TotalEnOuts  float64      `bson:"totalenouts"`
+	DetailWeek   []DetailWeek `bson:"detailweek"`
 }
 
 type DetailWeek struct {
@@ -48,4 +49,12 @@ type DetailWeek struct {
 	ToDate       string  `bson:"todate"`
 	Time         float64 `bson:"time"`
 	EnergyOutput float64 `bson:"energyoutput"`
+}
+
+type RodsPosition struct {
+	AR   int     `bson:"ar"`
+	KS1  int     `bson:"ks1"`
+	KS2  int     `bson:"ks2"`
+	KS3  int     `bson:"ks3"`
+	Temp float64 `bson:"temp"`
 }

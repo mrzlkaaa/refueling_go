@@ -8,10 +8,11 @@ type FuelCycle struct {
 }
 
 type WeeklyData struct {
-	WeekName    int
-	TotalTime   float64
-	TotalEnOuts float64
-	DetailWeek  []DetailWeek
+	WeekName     int
+	TotalTime    float64
+	RodsPosition RodsPosition
+	TotalEnOuts  float64
+	DetailWeek   []DetailWeek
 }
 
 type DetailWeek struct {
@@ -20,4 +21,12 @@ type DetailWeek struct {
 	ToDate       string
 	Time         float64
 	EnergyOutput float64
+}
+
+type RodsPosition struct {
+	AR   int
+	KS1  int
+	KS2  int
+	KS3  int
+	Temp float64
 }

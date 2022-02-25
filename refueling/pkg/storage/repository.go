@@ -43,7 +43,7 @@ func NewStorage() *Storage {
 
 func (s *Storage) GetRefuelNames() []listing.Refuel {
 	var binded []Refuel
-	s.db.Select("id", "refuel_name", "date").Find(&binded)
+	s.db.Select("id", "refuel_name", "date").Order("refuel_name desc").Find(&binded)
 	lenght := len(binded)
 	var refuels []listing.Refuel = make([]listing.Refuel, lenght)
 	for i, v := range binded {

@@ -74,13 +74,16 @@ func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
 	var FC FuelCycle
 	var WD WeeklyData
 	var DW DetailWeek
+	var RP RodsPosition
 
 	FC.Name = formsData.Name
 	WD.WeekName = formsData.WeekName
 
+	fmt.Println(formsData)
+
 	fmt.Println(len(formsData.DetailWeek))
 
-	PopulatingWD_DW(&WD, &DW, formsData)
+	PopulatingWD_DW(&WD, &DW, &RP, formsData)
 
 	FC.TotalTime += WD.TotalTime
 	FC.TotalEnOuts += WD.TotalEnOuts
@@ -89,7 +92,7 @@ func (s *Storage) AddWeeklyData(formsData *adding.FuelCycle) {
 
 	fmt.Println("added new: ", FC)
 
-	s.db.InsertOne(context.Background(), FC)
+	// s.db.InsertOne(context.Background(), FC)
 
 }
 
@@ -97,8 +100,9 @@ func (s *Storage) AppendWeeklyData(formsData *adding.FuelCycle) {
 
 	var WD WeeklyData
 	var DW DetailWeek
+	var RP RodsPosition
 	WD.WeekName = formsData.WeekName
-	PopulatingWD_DW(&WD, &DW, formsData)
+	PopulatingWD_DW(&WD, &DW, &RP, formsData)
 
 	filter := bson.M{
 		"name": bson.M{"$eq": formsData.Name},
@@ -110,6 +114,7 @@ func (s *Storage) AppendWeeklyData(formsData *adding.FuelCycle) {
 		},
 		"$push": bson.D{{"weeklydata", WD}},
 	}
+	fmt.Println(formsData)
 	fmt.Println("appended new: ", WD)
 	s.db.UpdateOne(context.Background(), filter, update)
 }
@@ -119,8 +124,8 @@ func (s *Storage) UpdateWeeklyData(formsData *adding.FuelCycle) {
 	var FCcurrent FuelCycle
 	var WD WeeklyData
 	var DW DetailWeek
-
-	PopulatingWD_DW(&WD, &DW, formsData)
+	var RP RodsPosition
+	PopulatingWD_DW(&WD, &DW, &RP, formsData)
 
 	arrayIndex := formsData.WeekName - 1
 	fmt.Println("weekanme from form is :", formsData.WeekName)
@@ -173,28 +178,36 @@ func (s Storage) OverallData() []listing.FuelCycle {
 	return FC
 }
 
-func (s *Storage) GetWeeksNum(fcName int) []int {
+func (s *Storage) GetWeeksNum(fcName int) map[string]int {
 	var result FuelCycle
 	err := s.db.FindOne(context.Background(), bson.D{
 		{"name", fcName}}).Decode(&result)
 	if err != nil {
 		fmt.Println(err)
-		return []int{1}
+		new := make(map[string]int)
+		new["New"] = 1
+		return new
 	}
 
 	fmt.Println(result)
 
-	var values []int
+	values := make(map[string]int)
+	var started string
+	var finished string
 	var lastValue int
 	for _, v := range result.WeeklyData {
-		values = append(values, v.WeekName)
+		started = v.DetailWeek[0].FromDate
+		finished = v.DetailWeek[len(v.DetailWeek)-1].ToDate
+		values[fmt.Sprintf("%v - %v", started, finished)] = v.WeekName
+		// values = append(values, v.WeekName)
 		lastValue = v.WeekName + 1
 	}
-	values = append(values, lastValue)
+	values["New"] = lastValue
+	// values = append(values, lastValue)
 	return values
 }
 
-func (s *Storage) WeekDetails(fcName int, weekName int) []listing.DetailWeek {
+func (s *Storage) WeekDetails(fcName int, weekName int) listing.WeeklyData {
 
 	filter := bson.M{
 		"name":       bson.M{"$eq": fcName},
@@ -206,17 +219,22 @@ func (s *Storage) WeekDetails(fcName int, weekName int) []listing.DetailWeek {
 	fmt.Println(err, result)
 
 	//* retrieving only WeekDetails for specific week
-	for _, v := range result.WeeklyData {
+	for i, v := range result.WeeklyData {
 		if v.Name == weekName {
-			return v.DetailWeek
+			return result.WeeklyData[i]
 		}
 	}
-
-	return []listing.DetailWeek{}
+	return listing.WeeklyData{} //* change return to listing.WeeklyData ---> that already include []listing.DetailWeek{}
 }
 
-func PopulatingWD_DW(WD *WeeklyData, DW *DetailWeek, formsData *adding.FuelCycle) {
+func PopulatingWD_DW(WD *WeeklyData, DW *DetailWeek, RP *RodsPosition, formsData *adding.FuelCycle) {
 
+	RP.AR = formsData.RodsPosition.AR
+	RP.KS1 = formsData.RodsPosition.KS1
+	RP.KS2 = formsData.RodsPosition.KS2
+	RP.KS3 = formsData.RodsPosition.KS3
+	RP.Temp = formsData.RodsPosition.Temp
+	WD.RodsPosition = *RP
 	for _, v := range formsData.DetailWeek {
 
 		WD.TotalTime += v.Time
