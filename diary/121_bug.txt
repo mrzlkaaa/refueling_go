@@ -1,0 +1,646 @@
+{
+        "_id" : ObjectId("6218c33f56fac1f0769cf39d"),
+        "name" : 121,
+        "totaltime" : 770.5333333333333,
+        "totalenouts" : 4420.3953,
+        "weeklydata" : [
+                {
+                        "weekname" : 1,
+                        "totaltime" : 90.26666666666667,
+                        "rodsposition" : {
+                                "ar" : 31,
+                                "ks1" : 60,
+                                "ks2" : 60,
+                                "ks3" : 17,
+                                "temp" : 402
+                        },
+                        "totalenouts" : 537.7833333333333,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-05-11T14:45",
+                                        "todate" : "2021-05-11T14:45",
+                                        "time" : 0,
+                                        "energyoutput" : 0
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-05-11T15:44",
+                                        "todate" : "2021-05-11T16:20",
+                                        "time" : 0.6,
+                                        "energyoutput" : 1.8
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-05-11T16:20",
+                                        "todate" : "2021-05-11T18:21",
+                                        "time" : 2.0166666666666666,
+                                        "energyoutput" : 10.083333333333334
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-05-11T18:21",
+                                        "todate" : "2021-05-15T10:00",
+                                        "time" : 87.65,
+                                        "energyoutput" : 525.9
+                                }
+                        ]
+                },
+                {
+                        "weekname" : 2,
+                        "totaltime" : 102.55,
+                        "rodsposition" : {
+                                "ar" : 30,
+                                "ks1" : 50,
+                                "ks2" : 50,
+                                "ks3" : 0,
+                                "temp" : 22.8
+                        },
+                        "totalenouts" : 610.9176666666666,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-05-17T12:37",
+                                        "todate" : "2021-05-17T12:42",
+                                        "time" : 0.08333333333333333,
+                                        "energyoutput" : 0.001
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-05-17T12:42",
+                                        "todate" : "2021-05-17T13:19",
+                                        "time" : 0.6166666666666667,
+                                        "energyoutput" : 1.85
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-05-17T13:19",
+                                        "todate" : "2021-05-17T15:21",
+                                        "time" : 2.033333333333333,
+                                        "energyoutput" : 10.166666666666666
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-05-17T15:21",
+                                        "todate" : "2021-05-21T19:10",
+                                        "time" : 99.81666666666666,
+                                        "energyoutput" : 598.9
+                                }
+                        ]
+                },
+                {
+                        "weekname" : 3,
+                        "totaltime" : 102.08333333333334,
+                        "rodsposition" : {
+                                "ar" : 38,
+                                "ks1" : 54,
+                                "ks2" : 54,
+                                "ks3" : 0,
+                                "temp" : 24.8
+                        },
+                        "totalenouts" : 597.5552666666667,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-05-24T12:55",
+                                        "todate" : "2021-05-24T13:08",
+                                        "time" : 0.21666666666666667,
+                                        "energyoutput" : 0.0026
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-05-24T13:08",
+                                        "todate" : "2021-05-24T13:45",
+                                        "time" : 0.6166666666666667,
+                                        "energyoutput" : 1.85
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-05-24T13:45",
+                                        "todate" : "2021-05-24T15:47",
+                                        "time" : 2.033333333333333,
+                                        "energyoutput" : 10.166666666666666
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-05-24T15:47",
+                                        "todate" : "2021-05-25T20:30",
+                                        "time" : 28.716666666666665,
+                                        "energyoutput" : 172.3
+                                },
+                                {
+                                        "power" : 5520,
+                                        "fromdate" : "2021-05-25T20:30",
+                                        "todate" : "2021-05-25T23:35",
+                                        "time" : 3.0833333333333335,
+                                        "energyoutput" : 17.02
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-05-25T23:35",
+                                        "todate" : "2021-05-26T18:40",
+                                        "time" : 19.083333333333332,
+                                        "energyoutput" : 114.5
+                                },
+                                {
+                                        "power" : 5700,
+                                        "fromdate" : "2021-05-26T18:40",
+                                        "todate" : "2021-05-27T06:30",
+                                        "time" : 11.833333333333334,
+                                        "energyoutput" : 67.45
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-05-27T06:30",
+                                        "todate" : "2021-05-27T10:00",
+                                        "time" : 3.5,
+                                        "energyoutput" : 21
+                                },
+                                {
+                                        "power" : 5640,
+                                        "fromdate" : "2021-05-27T10:00",
+                                        "todate" : "2021-05-27T23:09",
+                                        "time" : 13.15,
+                                        "energyoutput" : 74.166
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-05-27T23:09",
+                                        "todate" : "2021-05-28T19:00",
+                                        "time" : 19.85,
+                                        "energyoutput" : 119.10000000000001
+                                }
+                        ]
+                },
+                {
+                        "weekname" : 4,
+                        "totaltime" : 76.03333333333333,
+                        "rodsposition" : {
+                                "ar" : 38,
+                                "ks1" : 51,
+                                "ks2" : 51,
+                                "ks3" : 0,
+                                "temp" : 19.6
+                        },
+                        "totalenouts" : 404.3211,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-06-15T15:08",
+                                        "todate" : "2021-06-15T15:26",
+                                        "time" : 0.3,
+                                        "energyoutput" : 0.0035999999999999995
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-06-15T15:26",
+                                        "todate" : "2021-06-15T15:56",
+                                        "time" : 0.5,
+                                        "energyoutput" : 1.5
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-06-15T15:56",
+                                        "todate" : "2021-06-15T18:02",
+                                        "time" : 2.1,
+                                        "energyoutput" : 10.5
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-06-15T18:02",
+                                        "todate" : "2021-06-15T18:18",
+                                        "time" : 0.26666666666666666,
+                                        "energyoutput" : 1.4666666666666668
+                                },
+                                {
+                                        "power" : 5700,
+                                        "fromdate" : "2021-06-15T18:18",
+                                        "todate" : "2021-06-15T19:15",
+                                        "time" : 0.95,
+                                        "energyoutput" : 5.415
+                                },
+                                {
+                                        "power" : 5520,
+                                        "fromdate" : "2021-06-15T19:15",
+                                        "todate" : "2021-06-16T06:00",
+                                        "time" : 10.75,
+                                        "energyoutput" : 59.34
+                                },
+                                {
+                                        "power" : 5760,
+                                        "fromdate" : "2021-06-16T06:00",
+                                        "todate" : "2021-06-16T07:00",
+                                        "time" : 1,
+                                        "energyoutput" : 5.76
+                                },
+                                {
+                                        "power" : 5520,
+                                        "fromdate" : "2021-06-16T07:00",
+                                        "todate" : "2021-06-16T09:15",
+                                        "time" : 2.25,
+                                        "energyoutput" : 12.42
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-06-16T09:15",
+                                        "todate" : "2021-06-16T10:09",
+                                        "time" : 0.9,
+                                        "energyoutput" : 4.95
+                                },
+                                {
+                                        "power" : 5450,
+                                        "fromdate" : "2021-06-16T10:09",
+                                        "todate" : "2021-06-16T10:20",
+                                        "time" : 0.18333333333333332,
+                                        "energyoutput" : 0.9991666666666666
+                                },
+                                {
+                                        "power" : 5300,
+                                        "fromdate" : "2021-06-16T10:20",
+                                        "todate" : "2021-06-16T21:15",
+                                        "time" : 10.916666666666666,
+                                        "energyoutput" : 57.85833333333333
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-06-16T21:15",
+                                        "todate" : "2021-06-17T09:02",
+                                        "time" : 11.783333333333333,
+                                        "energyoutput" : 64.80833333333334
+                                },
+                                {
+                                        "power" : 5300,
+                                        "fromdate" : "2021-06-17T09:02",
+                                        "todate" : "2021-06-17T15:35",
+                                        "time" : 6.55,
+                                        "energyoutput" : 34.715
+                                },
+                                {
+                                        "power" : 5200,
+                                        "fromdate" : "2021-06-17T15:35",
+                                        "todate" : "2021-06-17T23:09",
+                                        "time" : 7.566666666666666,
+                                        "energyoutput" : 39.346666666666664
+                                },
+                                {
+                                        "power" : 5300,
+                                        "fromdate" : "2021-06-17T23:09",
+                                        "todate" : "2021-06-18T10:40",
+                                        "time" : 11.516666666666667,
+                                        "energyoutput" : 61.038333333333334
+                                },
+                                {
+                                        "power" : 5200,
+                                        "fromdate" : "2021-06-18T10:40",
+                                        "todate" : "2021-06-18T19:10",
+                                        "time" : 8.5,
+                                        "energyoutput" : 44.2
+                                }
+                        ]
+                },
+                {
+                        "weekname" : 5,
+                        "totaltime" : 101.36666666666667,
+                        "rodsposition" : {
+                                "ar" : 39,
+                                "ks1" : 47,
+                                "ks2" : 47,
+                                "ks3" : 0,
+                                "temp" : 22.9
+                        },
+                        "totalenouts" : 576.0485333333334,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-06-21T13:20",
+                                        "todate" : "2021-06-21T13:46",
+                                        "time" : 0.43333333333333335,
+                                        "energyoutput" : 0.0052
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-06-21T13:46",
+                                        "todate" : "2021-06-21T14:20",
+                                        "time" : 0.5666666666666667,
+                                        "energyoutput" : 1.7
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-06-21T14:20",
+                                        "todate" : "2021-06-21T16:21",
+                                        "time" : 2.0166666666666666,
+                                        "energyoutput" : 10.083333333333334
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-06-21T16:21",
+                                        "todate" : "2021-06-22T01:15",
+                                        "time" : 8.9,
+                                        "energyoutput" : 53.4
+                                },
+                                {
+                                        "power" : 5900,
+                                        "fromdate" : "2021-06-22T01:15",
+                                        "todate" : "2021-06-22T02:15",
+                                        "time" : 1,
+                                        "energyoutput" : 5.9
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-06-22T02:15",
+                                        "todate" : "2021-06-22T02:30",
+                                        "time" : 0.25,
+                                        "energyoutput" : 1.5
+                                },
+                                {
+                                        "power" : 5900,
+                                        "fromdate" : "2021-06-22T02:30",
+                                        "todate" : "2021-06-22T09:03",
+                                        "time" : 6.55,
+                                        "energyoutput" : 38.645
+                                },
+                                {
+                                        "power" : 5700,
+                                        "fromdate" : "2021-06-22T09:03",
+                                        "todate" : "2021-06-22T18:06",
+                                        "time" : 9.05,
+                                        "energyoutput" : 51.58500000000001
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-06-22T18:25",
+                                        "todate" : "2021-06-22T18:35",
+                                        "time" : 0.16666666666666666,
+                                        "energyoutput" : 0.5
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-06-22T18:35",
+                                        "todate" : "2021-06-22T18:47",
+                                        "time" : 0.2,
+                                        "energyoutput" : 1
+                                },
+                                {
+                                        "power" : 5700,
+                                        "fromdate" : "2021-06-22T18:47",
+                                        "todate" : "2021-06-25T19:01",
+                                        "time" : 72.23333333333333,
+                                        "energyoutput" : 411.73
+                                }
+                        ]
+                },
+                {
+                        "weekname" : 6,
+                        "totaltime" : 103.08333333333333,
+                        "rodsposition" : {
+                                "ar" : 36,
+                                "ks1" : 49,
+                                "ks2" : 47,
+                                "ks3" : 0,
+                                "temp" : 25
+                        },
+                        "totalenouts" : 559.954,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-06-28T14:20",
+                                        "todate" : "2021-06-28T14:40",
+                                        "time" : 0.3333333333333333,
+                                        "energyoutput" : 0.004
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-06-28T14:40",
+                                        "todate" : "2021-06-28T15:10",
+                                        "time" : 0.5,
+                                        "energyoutput" : 1.5
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-06-28T15:10",
+                                        "todate" : "2021-06-28T17:25",
+                                        "time" : 2.25,
+                                        "energyoutput" : 11.25
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-06-28T17:25",
+                                        "todate" : "2021-06-28T17:40",
+                                        "time" : 0.25,
+                                        "energyoutput" : 1.375
+                                },
+                                {
+                                        "power" : 5700,
+                                        "fromdate" : "2021-06-28T17:40",
+                                        "todate" : "2021-06-28T18:45",
+                                        "time" : 1.0833333333333333,
+                                        "energyoutput" : 6.175
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-06-28T18:45",
+                                        "todate" : "2021-06-30T10:55",
+                                        "time" : 40.166666666666664,
+                                        "energyoutput" : 220.91666666666666
+                                },
+                                {
+                                        "power" : 5250,
+                                        "fromdate" : "2021-06-30T10:55",
+                                        "todate" : "2021-07-01T09:15",
+                                        "time" : 22.333333333333332,
+                                        "energyoutput" : 117.25
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-07-01T09:15",
+                                        "todate" : "2021-07-02T01:10",
+                                        "time" : 15.916666666666666,
+                                        "energyoutput" : 87.54166666666666
+                                },
+                                {
+                                        "power" : 5700,
+                                        "fromdate" : "2021-07-02T01:10",
+                                        "todate" : "2021-07-02T10:00",
+                                        "time" : 8.833333333333334,
+                                        "energyoutput" : 50.35
+                                },
+                                {
+                                        "power" : 5600,
+                                        "fromdate" : "2021-07-02T10:00",
+                                        "todate" : "2021-07-02T18:00",
+                                        "time" : 8,
+                                        "energyoutput" : 44.8
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-07-02T18:00",
+                                        "todate" : "2021-07-02T21:25",
+                                        "time" : 3.4166666666666665,
+                                        "energyoutput" : 18.791666666666664
+                                }
+                        ]
+                },
+                {
+                        "weekname" : 7,
+                        "totaltime" : 94.91666666666669,
+                        "rodsposition" : {
+                                "ar" : 30,
+                                "ks1" : 40,
+                                "ks2" : 40,
+                                "ks3" : 0,
+                                "temp" : 17
+                        },
+                        "totalenouts" : 536.8800666666666,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-09-06T18:26",
+                                        "todate" : "2021-09-06T18:58",
+                                        "time" : 0.5333333333333333,
+                                        "energyoutput" : 0.0064
+                                },
+                                {
+                                        "power" : 50,
+                                        "fromdate" : "2021-09-06T18:58",
+                                        "todate" : "2021-09-06T19:22",
+                                        "time" : 0.4,
+                                        "energyoutput" : 0.02
+                                },
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-09-06T19:22",
+                                        "todate" : "2021-09-06T20:05",
+                                        "time" : 0.7166666666666667,
+                                        "energyoutput" : 0.0086
+                                },
+                                {
+                                        "power" : 1,
+                                        "fromdate" : "2021-09-06T20:05",
+                                        "todate" : "2021-09-06T22:53",
+                                        "time" : 2.8,
+                                        "energyoutput" : 0.0028
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-09-06T22:53",
+                                        "todate" : "2021-09-06T23:26",
+                                        "time" : 0.55,
+                                        "energyoutput" : 1.6500000000000001
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-09-06T23:26",
+                                        "todate" : "2021-09-07T01:32",
+                                        "time" : 2.1,
+                                        "energyoutput" : 10.5
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-09-07T01:32",
+                                        "todate" : "2021-09-07T10:17",
+                                        "time" : 8.75,
+                                        "energyoutput" : 52.5
+                                },
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-09-07T11:10",
+                                        "todate" : "2021-09-07T11:13",
+                                        "time" : 0.05,
+                                        "energyoutput" : 0.0006000000000000001
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-09-07T11:13",
+                                        "todate" : "2021-09-07T11:25",
+                                        "time" : 0.2,
+                                        "energyoutput" : 0.6
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-09-07T11:25",
+                                        "todate" : "2021-09-07T12:21",
+                                        "time" : 0.9333333333333333,
+                                        "energyoutput" : 4.666666666666667
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-09-07T12:21",
+                                        "todate" : "2021-09-08T05:59",
+                                        "time" : 17.633333333333333,
+                                        "energyoutput" : 105.8
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-09-08T06:45",
+                                        "todate" : "2021-09-08T06:50",
+                                        "time" : 0.08333333333333333,
+                                        "energyoutput" : 0.25
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-09-08T06:50",
+                                        "todate" : "2021-09-08T06:55",
+                                        "time" : 0.08333333333333333,
+                                        "energyoutput" : 0.41666666666666663
+                                },
+                                {
+                                        "power" : 5500,
+                                        "fromdate" : "2021-09-08T06:55",
+                                        "todate" : "2021-09-08T07:00",
+                                        "time" : 0.08333333333333333,
+                                        "energyoutput" : 0.4583333333333333
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-09-08T07:00",
+                                        "todate" : "2021-09-10T19:00",
+                                        "time" : 60,
+                                        "energyoutput" : 360
+                                }
+                        ]
+                },
+                {
+                        "weekname" : 8,
+                        "totaltime" : 100.23333333333333,
+                        "rodsposition" : {
+                                "ar" : 29,
+                                "ks1" : 37,
+                                "ks2" : 37,
+                                "ks3" : 0,
+                                "temp" : 20.4
+                        },
+                        "totalenouts" : 596.9353333333333,
+                        "detailweek" : [
+                                {
+                                        "power" : 12,
+                                        "fromdate" : "2021-09-13T13:31",
+                                        "todate" : "2021-09-13T13:41",
+                                        "time" : 0.16666666666666666,
+                                        "energyoutput" : 0.002
+                                },
+                                {
+                                        "power" : 3000,
+                                        "fromdate" : "2021-09-13T13:41",
+                                        "todate" : "2021-09-13T14:10",
+                                        "time" : 0.48333333333333334,
+                                        "energyoutput" : 1.45
+                                },
+                                {
+                                        "power" : 5000,
+                                        "fromdate" : "2021-09-13T14:10",
+                                        "todate" : "2021-09-13T16:11",
+                                        "time" : 2.0166666666666666,
+                                        "energyoutput" : 10.083333333333334
+                                },
+                                {
+                                        "power" : 6000,
+                                        "fromdate" : "2021-09-13T16:11",
+                                        "todate" : "2021-09-17T17:45",
+                                        "time" : 97.56666666666666,
+                                        "energyoutput" : 585.4
+                                }
+                        ]
+                }
+        ]
+}
+

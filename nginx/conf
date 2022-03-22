@@ -10,9 +10,14 @@ upstream proc {
     server processing:8890; #* put name of service + port
 }
 
+upstream generate_mcu {
+    server mcu_generator:8891; #* put name of service + port
+}
+
 server {
 listen 88;
 server_name refuel.nss-irt-t.xyz;
+client_max_body_size 20M;
 
     location /refuelings {
         proxy_pass http://refueling/refuelings;
@@ -54,6 +59,14 @@ server {
 
     location /change {
         proxy_pass http://proc/change;
+    }
+
+    location /generateNoBurn {
+        proxy_pass http://generate_mcu/generateNoBurn;
+    }
+
+    location /generateBurn {
+        proxy_pass http://generate_mcu/generateBurn;
     }
 
 }
