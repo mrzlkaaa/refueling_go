@@ -1,9 +1,19 @@
 package loggining
 
 type User struct {
-	ID       uint   `json:"ID"`
 	Username string `json:"Username"`
 	Password string `json:"Password"`
+}
+
+type UserData struct {
+	ID        uint
+	Name      string
+	Surname   string
+	Email     string
+	Username  string
+	PswdHash  []byte
+	Moderator bool
+	Admin     bool
 }
 
 type TokenDetails struct {

@@ -25,17 +25,17 @@ func NewService(storage Storage) Service {
 func (s *service) AddUser(userForm User) error {
 	err := s.storage.IfUserExists(userForm.Username)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	hashedPassword, err := s.HashPassword(userForm.Password)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	err = s.storage.AddUser(userForm, hashedPassword)
 	return err
 }
 
 func (s *service) HashPassword(password string) ([]byte, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 7)
 	return hashedPassword, err
 }

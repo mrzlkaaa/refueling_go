@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"refueling/auth/pkg/adding"
+	"refueling/auth/pkg/loggining"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -14,6 +15,7 @@ import (
 
 const (
 	dbUserExists = "User already exists"
+	UserNotFound = "User not found"
 )
 
 type Storage struct {
@@ -44,8 +46,11 @@ func NewStorage() *Storage {
 }
 
 func (s *Storage) AddUser(UserForm adding.User, password []byte) error {
-	var user *User
+	var user User
 
+	user.Name = UserForm.Name
+	user.Surname = UserForm.Surname
+	user.Email = UserForm.Email
 	user.Username = UserForm.Username
 	user.Password = password
 	user.Admin = UserForm.Admin
@@ -56,6 +61,26 @@ func (s *Storage) AddUser(UserForm adding.User, password []byte) error {
 	}
 
 	return nil
+}
+
+func (s *Storage) FindUser(username string) (loggining.UserData, error) {
+	var userStored User
+	var userData loggining.UserData
+	res := s.db.Find(&userStored, &User{Username: username})
+	if res.RowsAffected == 0 {
+		return userData, errors.New(UserNotFound)
+	}
+
+	userData.ID = userStored.ID
+	userData.Name = userStored.Name
+	userData.Surname = userStored.Surname
+	userData.Email = userStored.Email
+	userData.Username = userStored.Username
+	userData.PswdHash = userStored.Password
+	userData.Moderator = userStored.Moderator
+	userData.Admin = userStored.Admin
+
+	return userData, nil
 }
 
 func (s *Storage) UpdRole() {
