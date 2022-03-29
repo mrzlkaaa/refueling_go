@@ -25,10 +25,13 @@ type service struct {
 type Service interface {
 	Login(User) (map[string]string, error)
 	FetchValue(string) (string, error)
+	RefreshToken(uint) (map[string]string, error)
+	DeleteToken(string) error
 }
 
 type Storage interface {
 	FindUser(string) (UserData, error)
+	FindUserID(uint) (UserData, error)
 }
 
 func NewService(storage Storage) Service {
@@ -47,7 +50,7 @@ func NewService(storage Storage) Service {
 
 func (s *service) Login(user User) (map[string]string, error) {
 	var userData UserData
-	var token map[string]string = map[string]string{}
+	token := map[string]string{}
 	userData, err := s.storage.FindUser(user.Username)
 	if err != nil {
 		return token, err
@@ -61,7 +64,7 @@ func (s *service) Login(user User) (map[string]string, error) {
 	CreateRefreshToken(&td, userData.Name, userData.Surname, userData.Email)
 	CreateAccessToken(&td, userData.ID, userData.Moderator, userData.Admin)
 
-	err = s.PersistTokenDetails(&td, userData.Moderator, userData.Admin)
+	err = s.PersistTokenDetails(&td, userData.Moderator, userData.Admin, userData.ID)
 	if err != nil {
 		fmt.Println(err)
 		return token, errors.New(persistFailed)
@@ -78,8 +81,51 @@ func (s *service) FetchValue(key string) (string, error) {
 	return v, err
 }
 
-func (s *service) RefreshRefreshToken() {
+func (s *service) PersistTokenDetails(td *TokenDetails, moderator, admin bool, id uint) error {
+	at := time.Unix(td.AtExpires, 0)
+	rt := time.Unix(td.RtExpires, 0)
+	now := time.Now()
 
+	accValue := fmt.Sprintf("%v,%v", moderator, admin)
+
+	errAccess := s.client.Set(td.AccessUuid, accValue, at.Sub(now)).Err()
+	if errAccess != nil {
+		return errAccess
+	}
+
+	errRefresh := s.client.Set(td.RefreshUuid, id, rt.Sub(now)).Err()
+	if errRefresh != nil {
+		return errAccess
+	}
+
+	return nil
+}
+
+func (s *service) RefreshToken(userID uint) (map[string]string, error) {
+	var userData UserData
+	token := map[string]string{}
+	userData, err := s.storage.FindUserID(userID)
+	if err != nil {
+		return token, err
+	}
+	var td TokenDetails
+	CreateRefreshToken(&td, userData.Name, userData.Surname, userData.Email)
+	CreateAccessToken(&td, userData.ID, userData.Moderator, userData.Admin)
+
+	err = s.PersistTokenDetails(&td, userData.Moderator, userData.Admin, userData.ID)
+	if err != nil {
+		fmt.Println(err)
+		return token, errors.New(persistFailed)
+	}
+
+	token["accessToken"] = td.AccessToken
+	token["refreshToken"] = td.RefreshToken
+	return token, nil
+}
+
+func (s *service) DeleteToken(key string) error {
+	_, err := s.client.Del(key).Result()
+	return err
 }
 
 func CheckPass(hash []byte, pswd string) bool {
@@ -100,6 +146,7 @@ func CreateRefreshToken(token *TokenDetails, name, surname, email string) {
 	rtClaims["name"] = name
 	rtClaims["surname"] = surname
 	rtClaims["email"] = email
+	rtClaims["refresh_uuid"] = token.RefreshUuid
 	rtClaims["exp"] = token.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims) //sign the token
 	token.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
@@ -128,24 +175,4 @@ func CreateAccessToken(token *TokenDetails, id uint, moderator, admin bool) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func (s *service) PersistTokenDetails(td *TokenDetails, moderator, admin bool) error {
-	at := time.Unix(td.AtExpires, 0)
-	rt := time.Unix(td.RtExpires, 0)
-	now := time.Now()
-
-	value := fmt.Sprintf("%v,%v", moderator, admin)
-
-	errAccess := s.client.Set(td.AccessUuid, value, at.Sub(now)).Err()
-	if errAccess != nil {
-		return errAccess
-	}
-
-	errRefresh := s.client.Set(td.RefreshUuid, td.RefreshUuid, rt.Sub(now)).Err()
-	if errRefresh != nil {
-		return errAccess
-	}
-
-	return nil
 }

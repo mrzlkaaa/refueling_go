@@ -83,6 +83,25 @@ func (s *Storage) FindUser(username string) (loggining.UserData, error) {
 	return userData, nil
 }
 
+func (s *Storage) FindUserID(ID uint) (loggining.UserData, error) {
+	var userStored User
+	var userData loggining.UserData
+	res := s.db.Where("id =?", ID).Find(&userStored)
+	if res.RowsAffected == 0 {
+		return userData, errors.New(UserNotFound)
+	}
+
+	fmt.Println(userStored)
+	userData.ID = userStored.ID
+	userData.Name = userStored.Name
+	userData.Surname = userStored.Surname
+	userData.Email = userStored.Email
+	userData.Moderator = userStored.Moderator
+	userData.Admin = userStored.Admin
+
+	return userData, nil
+}
+
 func (s *Storage) UpdRole() {
 	//* do ipdate via member id?
 }
