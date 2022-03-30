@@ -26,11 +26,43 @@ func (s *Server) Router() *gin.Engine {
 	auth := router.Group("/")
 	auth.Use(AuthRequired())
 	{
+		auth.POST("/logout", s.Logout())
 		auth.POST("/add", s.AddUser())
 	}
 	router.POST("/login", s.Login())
 	router.POST("/refreshToken", s.RefreshToken())
 	return router
+}
+
+func (s *Server) Login() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var user loggining.User
+
+		err := c.BindJSON(&user)
+		if err != nil {
+			panic(err)
+		}
+		token, err := s.loggining.Login(user)
+		if err != nil {
+			errText := fmt.Sprintf("%v", err)
+			c.IndentedJSON(http.StatusOK, errText)
+			return
+		}
+		c.IndentedJSON(http.StatusOK, token)
+
+	}
+}
+
+func (s *Server) Logout() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims := FetchAuth(c)
+		err := s.loggining.DeleteToken(claims["access_uuid"].(string))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, "something unexpectable happened")
+			return
+		}
+		c.JSON(http.StatusOK, "logout successfully")
+	}
 }
 
 func (s *Server) AddUser() gin.HandlerFunc {
@@ -65,25 +97,6 @@ func (s *Server) AddUser() gin.HandlerFunc {
 	}
 }
 
-func (s *Server) Login() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var user loggining.User
-
-		err := c.BindJSON(&user)
-		if err != nil {
-			panic(err)
-		}
-		token, err := s.loggining.Login(user)
-		if err != nil {
-			errText := fmt.Sprintf("%v", err)
-			c.IndentedJSON(http.StatusOK, errText)
-			return
-		}
-		c.IndentedJSON(http.StatusOK, token)
-
-	}
-}
-
 func (s *Server) RefreshToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		mapToken := map[string]string{}
@@ -108,7 +121,7 @@ func (s *Server) RefreshToken() gin.HandlerFunc {
 		}
 		err = s.loggining.DeleteToken(claims["refresh_uuid"].(string))
 		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, "something unexpectable happened")
+			c.JSON(http.StatusUnauthorized, "something unexpectable happened")
 		}
 		idInt, _ := strconv.Atoi(id)
 		idUint := uint(idInt)
