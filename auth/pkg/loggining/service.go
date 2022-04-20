@@ -156,7 +156,8 @@ func CreateRefreshToken(token *TokenDetails, name, surname, email string) {
 }
 
 func CreateAccessToken(token *TokenDetails, id uint, moderator, admin bool) {
-	atExp := time.Now().Add(time.Minute * 45 * 1).Unix()
+	atExp := time.Now().Add(time.Minute * 60 * 1).Unix()
+	// atExp := time.Now().Add(time.Minute * 1 * 1).Unix()
 
 	token.AtExpires = atExp
 	token.AccessUuid = uuid.NewString()

@@ -1,6 +1,8 @@
 package adding
 
 import (
+	"refueling/auth/pkg/listing"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -10,11 +12,15 @@ type service struct {
 
 type Service interface {
 	AddUser(User) error
+	UpdateUsers(*[]listing.User) error
+	DeleteUser(uint) error
 	HashPassword(string) ([]byte, error)
 }
 
 type Storage interface {
 	AddUser(User, []byte) error
+	UpdateUser(*listing.User) error
+	DeleteUser(uint) error
 	IfUserExists(string) error
 }
 
@@ -32,6 +38,21 @@ func (s *service) AddUser(userForm User) error {
 		return err
 	}
 	err = s.storage.AddUser(userForm, hashedPassword)
+	return err
+}
+
+func (s *service) UpdateUsers(users *[]listing.User) error {
+	for _, user := range *users {
+		err := s.storage.UpdateUser(&user)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *service) DeleteUser(id uint) error {
+	err := s.storage.DeleteUser(id)
 	return err
 }
 

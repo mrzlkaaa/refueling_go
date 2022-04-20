@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"refueling/auth/pkg/adding"
+	"refueling/auth/pkg/listing"
 	"refueling/auth/pkg/loggining"
 
 	"github.com/joho/godotenv"
@@ -63,6 +64,35 @@ func (s *Storage) AddUser(UserForm adding.User, password []byte) error {
 	return nil
 }
 
+func (s *Storage) UpdateUser(user *listing.User) error {
+	var userStored User
+
+	res := s.db.Find(&userStored, "id = ?", user.ID)
+	if res.RowsAffected == 0 {
+		return errors.New(UserNotFound)
+	}
+
+	//* do replacement
+	userStored.Moderator = user.Moderator
+	userStored.Admin = user.Admin
+
+	res = s.db.Save(&userStored)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteUser(id uint) error {
+	res := s.db.Delete(&User{}, id)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
 func (s *Storage) FindUser(username string) (loggining.UserData, error) {
 	var userStored User
 	var userData loggining.UserData
@@ -100,6 +130,29 @@ func (s *Storage) FindUserID(ID uint) (loggining.UserData, error) {
 	userData.Admin = userStored.Admin
 
 	return userData, nil
+}
+
+func (s *Storage) GetAllUsers() ([]listing.User, error) {
+	var dbUsers []User
+
+	err := s.db.Select("id", "name", "surname", "username", "email", "moderator", "admin").Find(&dbUsers)
+	if err.Error != nil {
+		return []listing.User{}, nil
+	}
+
+	users := make([]listing.User, len(dbUsers))
+	for k, v := range dbUsers {
+		users[k].ID = v.ID
+		users[k].Name = v.Name
+		users[k].Surname = v.Surname
+		users[k].Username = v.Username
+		users[k].Email = v.Email
+		users[k].Moderator = v.Moderator
+		users[k].Admin = v.Admin
+	}
+	fmt.Println(users)
+
+	return users, nil
 }
 
 func (s *Storage) UpdRole() {

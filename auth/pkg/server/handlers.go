@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"refueling/auth/pkg/adding"
+	"refueling/auth/pkg/listing"
 	"refueling/auth/pkg/loggining"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ const (
 	unauthorized  = "unauthorized"
 	noRigths      = "you are not eligible for this service"
 	expired       = "token is expired"
+	unexpected    = "something unexpected happened"
 )
 
 func (s *Server) Router() *gin.Engine {
@@ -27,11 +29,36 @@ func (s *Server) Router() *gin.Engine {
 	auth.Use(AuthRequired())
 	{
 		auth.POST("/logout", s.Logout())
-		auth.POST("/add", s.AddUser())
+		auth.POST("/users/:id/delete", s.DeleteUser()) //! admin rights
+		auth.POST("/users/update", s.UpdateUsers())    //! admin rights
+		auth.GET("/getusers", s.GetAllUsers())         //! admin rights
 	}
+	router.POST("/register", s.AddUser())
 	router.POST("/login", s.Login())
 	router.POST("/refreshToken", s.RefreshToken())
 	return router
+}
+
+func AuthRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if _, err := ValidateToken(c); err != nil {
+			//! what if token expired? need to call refresh function
+			c.JSON(http.StatusUnauthorized, err.Error())
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func FetchAuth(c *gin.Context) (map[string]interface{}, error) {
+	claims, err := ValidateToken(c)
+	if err != nil {
+		// c.JSON(http.StatusUnauthorized, err)
+		return map[string]interface{}{}, err
+	}
+
+	return claims, nil
 }
 
 func (s *Server) Login() gin.HandlerFunc {
@@ -45,7 +72,7 @@ func (s *Server) Login() gin.HandlerFunc {
 		token, err := s.loggining.Login(user)
 		if err != nil {
 			errText := fmt.Sprintf("%v", err)
-			c.IndentedJSON(http.StatusOK, errText)
+			c.IndentedJSON(http.StatusUnauthorized, errText)
 			return
 		}
 		c.IndentedJSON(http.StatusOK, token)
@@ -55,10 +82,14 @@ func (s *Server) Login() gin.HandlerFunc {
 
 func (s *Server) Logout() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims := FetchAuth(c)
-		err := s.loggining.DeleteToken(claims["access_uuid"].(string))
+		claims, err := FetchAuth(c)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, "something unexpectable happened")
+			c.JSON(http.StatusUnauthorized, err.Error())
+			return
+		}
+		err = s.loggining.DeleteToken(claims["access_uuid"].(string))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, unexpected)
 			return
 		}
 		c.JSON(http.StatusOK, "logout successfully")
@@ -67,21 +98,21 @@ func (s *Server) Logout() gin.HandlerFunc {
 
 func (s *Server) AddUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims := FetchAuth(c)
-		rights, err := s.loggining.FetchValue(claims["access_uuid"].(string)) //* may be should ommit here and use only to logOut
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, expired)
-			return
-		}
-		//!checking for rigths of user
-		err = ParseRights(rights)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, noRigths)
-			return
-		}
+		// claims := FetchAuth(c)
+		// rights, err := s.loggining.FetchValue(claims["access_uuid"].(string)) //* may be should ommit here and use only to logOut
+		// if err != nil {
+		// 	c.JSON(http.StatusUnauthorized, expired)
+		// 	return
+		// }
+		// //*checking for rigths of user
+		// err = ParseRights(rights)
+		// if err != nil {
+		// 	c.JSON(http.StatusUnauthorized, noRigths)
+		// 	return
+		// }
 
 		var userForm adding.User
-		err = c.BindJSON(&userForm)
+		err := c.BindJSON(&userForm)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, notSerialized)
 			return
@@ -93,7 +124,86 @@ func (s *Server) AddUser() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, errText)
 			return
 		}
-		c.JSON(http.StatusOK, "User successfully registered")
+		c.JSON(http.StatusOK, "user successfully registered")
+	}
+}
+
+func (s *Server) UpdateUsers() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var users []listing.User
+		err := c.BindJSON(&users)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+
+		err = s.adding.UpdateUsers(&users)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, "successfully updated")
+	}
+}
+
+func (s *Server) DeleteUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, err := FetchAuth(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, err.Error())
+			return
+		}
+		_, err = s.loggining.FetchValue(claims["access_uuid"].(string))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, expired)
+			return
+		}
+
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, unexpected)
+			return
+		}
+		uid := uint(id)
+		err = s.adding.DeleteUser(uid)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, unexpected)
+			return
+		}
+		c.JSON(http.StatusOK, "deleted successfully")
+	}
+}
+
+func (s *Server) GetAllUsers() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, err := FetchAuth(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, err.Error())
+			return
+		}
+		rights, err := s.loggining.FetchValue(claims["access_uuid"].(string))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, expired)
+			return
+		}
+
+		//*checking for rigths of user
+		_, admin, err := ParseRights(rights)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, unexpected)
+			return
+		}
+		if !admin {
+			c.JSON(http.StatusUnauthorized, noRigths)
+			return
+		}
+
+		users, err := s.listing.GetAllUsers()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, users)
 	}
 }
 
@@ -107,11 +217,12 @@ func (s *Server) RefreshToken() gin.HandlerFunc {
 		}
 		token, err := VerifyToken(mapToken["token"], false)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, unauthorized)
+			c.JSON(http.StatusUnauthorized, err.Error())
+			return
 		}
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !token.Valid && !ok {
-			c.JSON(http.StatusUnauthorized, errors.New("token is not valid"))
+			c.JSON(http.StatusUnauthorized, "token is not valid")
 			return
 		}
 		id, err := s.loggining.FetchValue(claims["refresh_uuid"].(string)) //* may be should ommit here and use only to logOut
@@ -121,14 +232,14 @@ func (s *Server) RefreshToken() gin.HandlerFunc {
 		}
 		err = s.loggining.DeleteToken(claims["refresh_uuid"].(string))
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, "something unexpectable happened")
+			c.JSON(http.StatusUnauthorized, unexpected)
+			return
 		}
 		idInt, _ := strconv.Atoi(id)
 		idUint := uint(idInt)
 		newToken, err := s.loggining.RefreshToken(idUint)
 		if err != nil {
-			errText := fmt.Sprintf("%v", err)
-			c.IndentedJSON(http.StatusOK, errText)
+			c.IndentedJSON(http.StatusUnprocessableEntity, err.Error())
 			return
 		}
 		c.IndentedJSON(http.StatusOK, newToken)
@@ -136,43 +247,20 @@ func (s *Server) RefreshToken() gin.HandlerFunc {
 	}
 }
 
-func FetchAuth(c *gin.Context) map[string]interface{} {
-	claims, err := ValidateToken(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, unauthorized)
-		return map[string]interface{}{}
-	}
-
-	return claims
-}
-
-func AuthRequired() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if _, err := ValidateToken(c); err != nil {
-			//! what if token expired? need to call refresh function
-			c.JSON(http.StatusUnauthorized, expired)
-			c.Abort()
-			return
-		}
-		c.Next()
-	}
-}
-
 func ValidateToken(c *gin.Context) (map[string]interface{}, error) {
 	auth := c.Request.Header.Get("Authorization")
 	if auth == "" {
-		return map[string]interface{}{}, errors.New(unauthorized)
+		return map[string]interface{}{}, errors.New("bearer token is not given")
 	}
 	tokenString := strings.Split(auth, " ")[len(strings.Split(auth, " "))-1]
 	token, err := VerifyToken(tokenString, true)
-	fmt.Println(token, err)
 	if err != nil {
 		return map[string]interface{}{}, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !token.Valid && !ok {
-		return map[string]interface{}{}, errors.New("is not valid")
+		return map[string]interface{}{}, errors.New("token is not valid")
 	}
 	// uuid := claims["access_uuid"].(string)
 
@@ -190,17 +278,30 @@ func VerifyToken(tokenString string, access bool) (*jwt.Token, error) { //todo a
 		return []byte(os.Getenv("REFRESH_SECRET")), nil
 
 	})
-	return token, err
+	if err != nil {
+		ve, ok := err.(*jwt.ValidationError)
+		if ok && ve.Errors&jwt.ValidationErrorMalformed != 0 {
+			return token, errors.New("signature is invalid")
+		} else if ok && ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+			return token, errors.New(expired)
+		} else {
+			return token, errors.New(unexpected)
+		}
+	}
+	return token, nil
 }
 
-func ParseRights(rights string) error {
+func ParseRights(rights string) (bool, bool, error) {
 	sliceRights := strings.Split(rights, ",")
 	moderatorStr, adminStr := sliceRights[0], sliceRights[1]
-	moderator, _ := strconv.ParseBool(moderatorStr)
+	moderator, err := strconv.ParseBool(moderatorStr)
+	if err != nil {
+		return false, false, err
+	}
 	admin, _ := strconv.ParseBool(adminStr)
-	if moderator || admin {
-		return nil
+	if err != nil {
+		return false, false, err
 	}
 
-	return errors.New(noRigths)
+	return moderator, admin, nil
 }
