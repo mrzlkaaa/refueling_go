@@ -26,7 +26,7 @@ const (
 func (s *Server) Router() *gin.Engine {
 	router := s.engine
 	auth := router.Group("/")
-	auth.Use(AuthRequired())
+	auth.Use(s.AuthRequired())
 	{
 		auth.POST("/logout", s.Logout())
 		auth.POST("/users/:id/delete", s.DeleteUser()) //! admin rights
@@ -39,14 +39,24 @@ func (s *Server) Router() *gin.Engine {
 	return router
 }
 
-func AuthRequired() gin.HandlerFunc {
+func (s *Server) AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if _, err := ValidateToken(c); err != nil {
-			//! what if token expired? need to call refresh function
-			c.JSON(http.StatusUnauthorized, err.Error())
-			c.Abort()
-			return
+		claims, err := ValidateToken(c)
+		if err != nil {
+			// c.JSON(http.StatusUnauthorized, err.Error())
+			c.AbortWithError(http.StatusUnauthorized, err)
 		}
+		rights, err := s.loggining.FetchValue(claims["access_uuid"].(string))
+		if err != nil {
+			c.AbortWithError(http.StatusUnauthorized, err)
+		}
+		moderator, admin, err := ParseRights(rights)
+		if err != nil {
+			c.AbortWithError(http.StatusUnauthorized, err)
+		}
+		c.Set("access_uuid", claims["access_uuid"])
+		c.Set("moderator", moderator)
+		c.Set("admin", admin)
 		c.Next()
 	}
 }
@@ -54,7 +64,6 @@ func AuthRequired() gin.HandlerFunc {
 func FetchAuth(c *gin.Context) (map[string]interface{}, error) {
 	claims, err := ValidateToken(c)
 	if err != nil {
-		// c.JSON(http.StatusUnauthorized, err)
 		return map[string]interface{}{}, err
 	}
 
@@ -82,12 +91,12 @@ func (s *Server) Login() gin.HandlerFunc {
 
 func (s *Server) Logout() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims, err := FetchAuth(c)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, err.Error())
-			return
+		accessuuid, ok := c.Get("access_uuid")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, unauthorized)
 		}
-		err = s.loggining.DeleteToken(claims["access_uuid"].(string))
+
+		err := s.loggining.DeleteToken(accessuuid.(string))
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, unexpected)
 			return
@@ -98,19 +107,6 @@ func (s *Server) Logout() gin.HandlerFunc {
 
 func (s *Server) AddUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// claims := FetchAuth(c)
-		// rights, err := s.loggining.FetchValue(claims["access_uuid"].(string)) //* may be should ommit here and use only to logOut
-		// if err != nil {
-		// 	c.JSON(http.StatusUnauthorized, expired)
-		// 	return
-		// }
-		// //*checking for rigths of user
-		// err = ParseRights(rights)
-		// if err != nil {
-		// 	c.JSON(http.StatusUnauthorized, noRigths)
-		// 	return
-		// }
-
 		var userForm adding.User
 		err := c.BindJSON(&userForm)
 		if err != nil {
@@ -130,6 +126,15 @@ func (s *Server) AddUser() gin.HandlerFunc {
 
 func (s *Server) UpdateUsers() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		admin, ok := c.Get("admin")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, noRigths)
+		}
+		if !admin.(bool) {
+			c.JSON(http.StatusUnauthorized, noRigths)
+			return
+		}
+
 		var users []listing.User
 		err := c.BindJSON(&users)
 		if err != nil {
@@ -148,14 +153,12 @@ func (s *Server) UpdateUsers() gin.HandlerFunc {
 
 func (s *Server) DeleteUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims, err := FetchAuth(c)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, err.Error())
-			return
+		admin, ok := c.Get("admin")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, noRigths)
 		}
-		_, err = s.loggining.FetchValue(claims["access_uuid"].(string))
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, expired)
+		if !admin.(bool) {
+			c.JSON(http.StatusUnauthorized, noRigths)
 			return
 		}
 
@@ -176,24 +179,11 @@ func (s *Server) DeleteUser() gin.HandlerFunc {
 
 func (s *Server) GetAllUsers() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims, err := FetchAuth(c)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, err.Error())
-			return
+		admin, ok := c.Get("admin")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, noRigths)
 		}
-		rights, err := s.loggining.FetchValue(claims["access_uuid"].(string))
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, expired)
-			return
-		}
-
-		//*checking for rigths of user
-		_, admin, err := ParseRights(rights)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, unexpected)
-			return
-		}
-		if !admin {
+		if !admin.(bool) {
 			c.JSON(http.StatusUnauthorized, noRigths)
 			return
 		}
