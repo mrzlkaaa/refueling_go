@@ -52,17 +52,23 @@ func (s *Server) AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, err := ValidateToken(c)
 		if err != nil {
-			// c.JSON(http.StatusUnauthorized, err.Error())
-			c.AbortWithError(http.StatusUnauthorized, err)
+			c.JSON(http.StatusUnauthorized, err.Error())
+			c.Abort()
+			return
 		}
 		rights, err := s.FetchValue(claims["access_uuid"].(string))
 		if err != nil {
-			c.AbortWithError(http.StatusUnauthorized, err)
+			c.JSON(http.StatusUnauthorized, expired)
+			c.Abort()
+			return
 		}
 		moderator, admin, err := ParseRights(rights)
 		if err != nil {
-			c.AbortWithError(http.StatusUnauthorized, err)
+			c.JSON(http.StatusUnauthorized, noRigths)
+			c.Abort()
+			return
 		}
+
 		c.Set("access_uuid", claims["access_uuid"])
 		c.Set("moderator", moderator)
 		c.Set("admin", admin)
