@@ -9,6 +9,6 @@ type User struct {
 	Email     string `gorm:"unique; not null"`
 	Username  string `gorm:"unique; not null"`
 	Password  []byte
-	Moderator bool `gorm:"default:true"`
+	Moderator bool `gorm:"default:false"`
 	Admin     bool `gorm:"default:false"`
 }
