@@ -1,6 +1,13 @@
 package storage
 
-import "strings"
+import (
+	"path/filepath"
+	"strings"
+)
+
+var (
+	basePathTo string = "pkg/storage/data" //* will be joined with filepath.Dir(os.Getwd())
+)
 
 func FormatterCoreConfig(coreConfig *[][]string) *[]byte {
 	var str string
@@ -57,4 +64,20 @@ func BackFormatterPDC(pdc *[]byte) *[]string {
 	}
 	// arr = append(arr, str)
 	return &arr
+}
+
+//* add here helper to create forder that accotiate with PathTo
+func PrepareStorePath() (string, error) {
+	// cwd, err := os.Getwd()
+	// if err != nil {
+	// 	return ""
+	// 	// return err
+	// }
+	cwd := "/mnt/c/Users/Nikita/Desktop/codes/go/src/refueling/refueling/cmd" //* test path where main.go is located
+
+	parentPath := filepath.Dir(cwd)
+
+	path := filepath.Join(parentPath, basePathTo)
+	return path, nil
+	// return nil
 }
