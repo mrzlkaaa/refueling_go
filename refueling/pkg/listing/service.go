@@ -4,13 +4,13 @@ type ListingService interface {
 	GetRefuelNames() map[string][]int
 	Refuels() []Refuel
 	RefuelDetails(int) []Act
-	RefuelPDC(int) []string
+	PDCStorageQuery(int, string) []string
 }
 
 type StorageService interface {
 	GetRefuelNames() []Refuel
 	RefuelDetails(int) []Act
-	RefuelPDC(int) []string
+	PDCStorageQuery(int, string) []string
 }
 
 type listingService struct {
@@ -37,12 +37,12 @@ func (s *listingService) Refuels() []Refuel {
 	return data
 }
 
-func (s *listingService) RefuelDetails(id int) []Act {
-	data := s.storage.RefuelDetails(id)
+func (s *listingService) RefuelDetails(refuelName int) []Act {
+	data := s.storage.RefuelDetails(refuelName)
 	return data
 }
 
-func (s *listingService) RefuelPDC(id int) []string {
-	data := s.storage.RefuelPDC(id)
+func (s *listingService) PDCStorageQuery(refuelName int, name string) []string {
+	data := s.storage.PDCStorageQuery(refuelName, name)
 	return data
 }

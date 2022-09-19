@@ -7,9 +7,9 @@ type Refuel struct {
 }
 
 type Act struct {
-	Name        string     `json:"fileName"`
-	CoreConfig  [][]string `json:"map"`
-	PDC         []string   `json:"pdc"`
-	Description string     `json:"description"`
-	RefuelID    int        `json:"refuelId"`
+	Name          string     `json:"fileName"`
+	CoreConfig    [][]string `json:"map"` //* separate from data that is aimed to store?
+	PDC           []string   `json:"pdc"` //* separate from data that is aimed to store?
+	Description   string     `json:"description"`
+	RefuelNameRef int        `json:"refuelNameRef"`
 }

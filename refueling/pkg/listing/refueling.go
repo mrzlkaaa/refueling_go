@@ -2,15 +2,16 @@ package listing
 
 type Refuel struct {
 	ID         uint `gorm:"primaryKey"`
-	RefuelName int
+	RefuelName int  `gorm:"unique"`
 	Date       string
-	Acts       []Act `gorm:"foreignKey:RefuelID"`
+	Acts       []Act `gorm:"foreignKey:RefuelName;references:RefuelName"`
 }
 
 type Act struct {
-	ID          uint `gorm:"foreignKey:RefuelID"`
-	Name        string
-	CoreConfig  [][]string
-	Description string
-	RefuelID    int
+	ID         uint `gorm:"foreignKey:RefuelName"`
+	Name       string
+	CoreConfig [][]string
+	// PDC           []string
+	Description   string
+	RefuelNameRef int
 }

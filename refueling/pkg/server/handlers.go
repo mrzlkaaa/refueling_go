@@ -36,13 +36,12 @@ func (s *Server) Router() *gin.Engine {
 	{
 		auth.GET("/refuelingsList", s.RefNames())
 		auth.GET("/refuelings", s.Refuels())
-		auth.GET("/refuelings/:id/details", s.RefuelDetails())
-		auth.GET("/refuelings/:id/:actId/PDC", s.RefuelPDC())
-		auth.GET("/refuelings/:id/:actId/download", s.Download())
+		auth.GET("/refuelings/:refuelName/details", s.RefuelDetails())
+		auth.GET("/refuelings/:refuelName/:actName/PDC", s.RefuelPDC())
 		auth.POST("/add", s.Add())
 		auth.POST("/add-act", s.AddAct())
-		auth.POST("/refuelings/:id/:actId/delete", s.DeleteAct())
-		auth.POST("/refuelings/:id/delete", s.Delete())
+		auth.POST("/refuelings/:refuelName/:actName/delete", s.DeleteAct())
+		auth.POST("/refuelings/:refuelName/delete", s.Delete())
 	}
 
 	return router
@@ -206,9 +205,9 @@ func (s *Server) RefuelDetails() gin.HandlerFunc {
 			return
 		}
 
-		idstr := c.Param("id")
-		id, _ := strconv.Atoi(idstr)
-		data := s.listing.RefuelDetails(id)
+		refuelNameStr := c.Param("refuelName")
+		refuelName, _ := strconv.Atoi(refuelNameStr)
+		data := s.listing.RefuelDetails(refuelName)
 		c.IndentedJSON(http.StatusOK, data)
 	}
 }
@@ -229,12 +228,13 @@ func (s *Server) RefuelPDC() gin.HandlerFunc {
 			return
 		}
 
-		idParam := c.Param("actId")
-		id, err := strconv.Atoi(idParam)
+		refuelNameStr := c.Param("refuelName")
+		actName := c.Param("actName")
+		refuelName, err := strconv.Atoi(refuelNameStr)
 		if err != nil {
 			panic(err)
 		}
-		data := s.listing.RefuelPDC(id)
+		data := s.listing.PDCStorageQuery(refuelName, actName)
 		c.JSON(http.StatusOK, data)
 	}
 }
@@ -257,6 +257,7 @@ func (s *Server) Add() gin.HandlerFunc {
 		}
 		if err := s.adding.Adding(refuel); err != nil {
 			errText := fmt.Sprintf("%v", err)
+			fmt.Println(errText)
 			c.JSON(http.StatusBadRequest, errText)
 			return
 		}
@@ -280,8 +281,8 @@ func (s *Server) AddAct() gin.HandlerFunc {
 		if err := c.BindJSON(&act); err != nil {
 			panic(err)
 		}
-		err, id := s.adding.AddingAct(act)
-		var obj map[string]interface{} = map[string]interface{}{"msg": statusOkAdd, "id": id}
+		id, err := s.adding.AddingAct(act)
+		var obj map[string]interface{} = map[string]interface{}{"msg": statusOkAdd, "id": id} //! is this actually needed in such format
 		if err != nil {
 			errText := fmt.Sprintf("%v", err)
 			obj["msg"] = errText
@@ -303,12 +304,21 @@ func (s *Server) Delete() gin.HandlerFunc {
 		}
 
 		// var refuel interface{}
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
+		refuelNameStr := c.Param("refuelName")
+		// name := c.Param("refuelName")
+		refuelName, err := strconv.Atoi(refuelNameStr)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusBadRequest, err)
+			return
 		}
-		err = s.adding.Deleting(id)
+
+		// refuelName, err := strconv.Atoi(name)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+
+		err = s.adding.Delete(refuelName)
 		if err != nil {
 			errText := fmt.Sprintf("%v", err)
 			fmt.Println(errText)
@@ -331,12 +341,17 @@ func (s *Server) DeleteAct() gin.HandlerFunc {
 		}
 
 		// var refuel interface{}
-		idParam := c.Param("actId")
-		id, err := strconv.Atoi(idParam)
+		refuelNameStr := c.Param("refuelName")
+		//! must be also a name
+		actName := c.Param("actName")
+		if actName == "undefined" {
+			c.JSON(http.StatusBadRequest, "valid actName is not given")
+		}
+		refuelName, err := strconv.Atoi(refuelNameStr)
 		if err != nil {
 			panic(err)
 		}
-		err = s.adding.DeletingAct(id)
+		err = s.adding.DeleteAct(refuelName, actName)
 		if err != nil {
 			errText := fmt.Sprintf("%v", err)
 			fmt.Println(errText)
@@ -347,33 +362,33 @@ func (s *Server) DeleteAct() gin.HandlerFunc {
 	}
 }
 
-func (s *Server) Download() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		moderator, ok := c.Get("moderator")
-		if !ok {
-			c.JSON(http.StatusUnauthorized, noRigths)
-		}
+// func (s *Server) Download() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		moderator, ok := c.Get("moderator")
+// 		if !ok {
+// 			c.JSON(http.StatusUnauthorized, noRigths)
+// 		}
 
-		admin, ok := c.Get("admin")
-		if !ok {
-			c.JSON(http.StatusUnauthorized, noRigths)
-		}
-		if !moderator.(bool) && !admin.(bool) {
-			c.JSON(http.StatusUnauthorized, noRigths)
-			return
-		}
+// 		admin, ok := c.Get("admin")
+// 		if !ok {
+// 			c.JSON(http.StatusUnauthorized, noRigths)
+// 		}
+// 		if !moderator.(bool) && !admin.(bool) {
+// 			c.JSON(http.StatusUnauthorized, noRigths)
+// 			return
+// 		}
 
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			panic(err)
-		}
-		actIdParam := c.Param("actId")
-		actId, err := strconv.Atoi(actIdParam)
-		if err != nil {
-			panic(err)
-		}
-		path := s.download.SavePDC(id, actId)
-		c.IndentedJSON(http.StatusOK, path)
-	}
-}
+// 		idParam := c.Param("id")
+// 		id, err := strconv.Atoi(idParam)
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 		actIdParam := c.Param("actId")
+// 		actId, err := strconv.Atoi(actIdParam)
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 		path := s.download.SavePDC(id, actId)
+// 		c.IndentedJSON(http.StatusOK, path)
+// 	}
+// }
