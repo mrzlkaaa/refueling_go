@@ -2,7 +2,6 @@ package main
 
 import (
 	"refueling/refueling/pkg/adding"
-	"refueling/refueling/pkg/download"
 	"refueling/refueling/pkg/listing"
 	"refueling/refueling/pkg/server"
 	"refueling/refueling/pkg/storage"
@@ -10,17 +9,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Services struct {
+	storage *storage.Storage
+	adding  adding.AddingService
+	listing listing.ListingService
+}
+
 func main() {
-	engine := gin.Default()
+	engine := setUpEngine()
 	engine.Use(CORSMiddleware())
 	// engine.Use(cors.Default())
+
+	services := setUpServices()
+	srvr := server.NewServer(engine, services.adding, services.listing)
+	srvr.Run()
+
+}
+
+func setUpEngine() *gin.Engine {
+	engine := gin.Default()
+	return engine
+}
+
+func setUpServices() *Services {
 	storage := storage.NewStorage()
 	adding := adding.NewService(storage)
 	listing := listing.NewListingService(storage)
-	download := download.NewService(storage)
-	srvr := server.NewServer(engine, adding, listing, download)
-	srvr.Run()
-
+	return &Services{storage: storage, adding: adding, listing: listing}
 }
 
 func CORSMiddleware() gin.HandlerFunc {

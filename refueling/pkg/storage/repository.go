@@ -412,7 +412,7 @@ func (s *Storage) DeleteAct(refuelName int, actName string) error {
 		return err
 	}
 
-	res := s.db.Where(&Act{Name: actName, RefuelNameRef: refuel.RefuelName}).Delete(&act) //*delete all Acts with matched FK
+	res := s.db.Where(&Act{Name: actName, RefuelNameRef: refuel.RefuelName}).Delete(&act) //*delete only 1 act
 	if res.RowsAffected == 0 {
 		return NotFoundErr
 	}
